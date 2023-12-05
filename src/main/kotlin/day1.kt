@@ -10,7 +10,7 @@ val digits = mapOf(
     "nine" to "9",
 )
 
-fun main(args: Array<String>) {
+fun main() {
     print(object {}.javaClass.getResourceAsStream("day1.txt").bufferedReader().readLines().sumOf { line ->
         val firstLast = ("" + line.withFirstDigitReplaced().first { it.isDigit() } + line.withLastDigitReplaced()
             .last { it.isDigit() }).toInt()

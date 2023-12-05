@@ -1,4 +1,3 @@
-import java.io.InputStream
 import kotlin.math.pow
 
 data class Card(
@@ -20,28 +19,30 @@ data class Card(
     }
 }
 
-fun String.toDay4(): Card {
-    val (card, numbers) = split(": ")
-    val (winning, yours) = numbers.split(" | ")
-    return Card(
-        card.substring(5).trim().toInt(),
-        winning.toNumberList(),
-        yours.toNumberList(),
-    )
+class ScratchcardsParser : LineParser<Card> {
+    override fun parseLine(index: Int, line: String): Card {
+        val (card, numbers) = line.split(": ")
+        val (winning, yours) = numbers.split(" | ")
+        return Card(
+            card.substring(5).trim().toInt(),
+            winning.toNumberList(),
+            yours.toNumberList(),
+        )
+    }
+
 }
 
-private fun String.toNumberList() =
-    split(" ").map { it.trim() }.filter { it.isNotBlank() }.map { it.toInt() }
+class Scratchcards(inputType: InputType = InputType.FINAL) : AocRunner<Card, Int>( 4, ScratchcardsParser(), inputType) {
 
-fun calculateDay4Ex1(stream: InputStream): Int {
-    return stream.bufferedReader().readLines().map { it.toDay4().getPoints() }.sum()
-}
+    override fun partOne(): Int {
+        return inputLines.sumOf { it.getPoints() }
+    }
 
-fun calculateDay4Ex2(stream: InputStream): Int {
-    val numberOfCopies = mutableMapOf<Int, Int>()
-    val originalCards = stream.bufferedReader().readLines().map { it.toDay4() }
-    originalCards.forEach{ card -> numberOfCopies.addCardWinningCopies(card) }
-    return numberOfCopies.values.sum() + originalCards.size
+    override fun partTwo(): Int {
+        val numberOfCopies = mutableMapOf<Int, Int>()
+        inputLines.forEach{ card -> numberOfCopies.addCardWinningCopies(card) }
+        return numberOfCopies.values.sum() + inputLines.size
+    }
 }
 
 fun MutableMap<Int, Int>.addCardWinningCopies(card: Card) : MutableMap<Int, Int>{
@@ -55,7 +56,6 @@ fun MutableMap<Int, Int>.addCardWinningCopies(card: Card) : MutableMap<Int, Int>
     return this
 }
 
-fun main(args: Array<String>) {
-    println("Ex 1 : " + calculateDay4Ex1(object {}.javaClass.getResourceAsStream("day4.txt")))
-    println("Ex 2 : " + calculateDay4Ex2(object {}.javaClass.getResourceAsStream("day4.txt")))
+fun main() {
+    Scratchcards().run()
 }

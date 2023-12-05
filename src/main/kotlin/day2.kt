@@ -31,7 +31,7 @@ fun String.toGame() : Game {
 val colors = listOf("red", "green", "blue")
 val limits = mapOf("red" to 12, "green" to 13, "blue" to 14)
 
-fun main(args: Array<String>) {
+fun main() {
     val games = object {}.javaClass.getResourceAsStream("day2.txt").bufferedReader().readLines().map { it.toGame() }
     print(games.sumOf { it.getPower() })
 }

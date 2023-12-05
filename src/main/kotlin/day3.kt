@@ -29,7 +29,7 @@ fun String.toDay3(lineIndex: Int) : Day3 {
         )
 }
 
-fun main(args: Array<String>) {
+fun main() {
     var lineIndex = 0
     val lines = object {}.javaClass.getResourceAsStream("day3.txt").bufferedReader().readLines().map { it.toDay3(lineIndex++) }
     val numbers = lines.flatMap { it.numbers }
