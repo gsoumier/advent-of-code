@@ -1,3 +1,6 @@
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.runBlocking
 import java.io.InputStream
 
 fun aocInputStream(aocDay: Int, type: InputType = InputType.FINAL): InputStream =
@@ -23,4 +26,8 @@ fun List<String>.splitWhen(predicate: (String) -> Boolean): List<List<String>> {
     }
     result.add(sublist.toList())
     return result.toList()
+}
+
+fun <A, B>List<A>.pmap(f: suspend (A) -> B): List<B> = runBlocking {
+    map { async(Dispatchers.Default) { f(it) } }.map { it.await() }
 }

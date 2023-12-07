@@ -5,24 +5,14 @@ import org.junit.jupiter.api.Test
 
 class Day5Test {
 
-    private val sampleDay5 = "Bla Bla"
 
     @Nested
     inner class Day5ParserTest {
-        private val parser = Day5Parser()
-
-        @Test
-        fun testParse() {
-            parser.parseLine(1, "Bla Bla Bla") shouldBe sampleDay5
-        }
     }
 
     @Nested
     inner class RangeMapLineTest {
-        @Test
-        fun test() {
-            sampleDay5 shouldBe "Bla"
-        }
+
     }
 
     @Nested

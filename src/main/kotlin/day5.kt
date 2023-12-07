@@ -61,15 +61,27 @@ class Day5(inputType: InputType = InputType.FINAL) : AocRunner<String, Long>(5, 
     }
 
     override fun partTwo(): Long {
-        var index = 0L
-        while (!hasSeed(getSourceValue(index))) {
-            index++
+        return getMinLocationFromSeeds()
+    }
+
+    private fun getMinExistingSeedFromLocation(start: Long = 0L): Long {
+        var location = start
+        while (!hasSeed(getSourceValue(location))) {
+            location++
         }
-        return index
+        return location
+    }
+
+    private fun getMinLocationFromSeeds(): Long {
+        return seeds.chunked(2) { it[0] to it[1] }.pmap { getMinLocationFromSeeds(it.first..<it.first+it.second) }.min()
+    }
+
+    private fun getMinLocationFromSeeds(longRange: LongRange): Long {
+        return longRange.minOf { getDestValue(it) }
     }
 
     private fun hasSeed(seed: Long): Boolean {
-        return seeds.chunked(2) { it[0] to it[1] }.sortedBy { it.first }.firstOrNull {
+        return seeds.chunked(2) { it[0] to it[1] }.firstOrNull {
             it.first <= seed && seed < it.first + it.second
         } != null
     }
