@@ -35,13 +35,13 @@ class ScratchcardsParser : LineParser<Card> {
 class Scratchcards(inputType: InputType = InputType.FINAL) : AocRunner<Card, Int>( 4, ScratchcardsParser(), inputType) {
 
     override fun partOne(): Int {
-        return inputLines.sumOf { it.getPoints() }
+        return lines.sumOf { it.getPoints() }
     }
 
     override fun partTwo(): Int {
         val numberOfCopies = mutableMapOf<Int, Int>()
-        inputLines.forEach{ card -> numberOfCopies.addCardWinningCopies(card) }
-        return numberOfCopies.values.sum() + inputLines.size
+        lines.forEach{ card -> numberOfCopies.addCardWinningCopies(card) }
+        return numberOfCopies.values.sum() + lines.size
     }
 }
 

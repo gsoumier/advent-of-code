@@ -1,14 +1,15 @@
 import kotlin.system.measureTimeMillis
 
 interface LineParser<T>{
-    fun parseLine(index: Int, line: String) : T
-    fun parseLine(line: String) : T = parseLine(0, line)
+    fun parseLine(index: Int, line: String) : T?
+    fun parseLine(line: String) : T? = parseLine(0, line)
 }
 
 abstract class AocRunner<T, Out>(day: Int, val parser: LineParser<T>, inputType: InputType = InputType.FINAL) {
 
-    val inputLines: List<T> = aocInputStream(day, inputType).bufferedReader().readLines()
-        .mapIndexed { index, line -> parser.parseLine(index, line) }
+    val stringList = aocInputStream(day, inputType).bufferedReader().readLines()
+    val lines: List<T> = stringList
+        .mapIndexedNotNull() { index, line -> parser.parseLine(index, line) }
         .onEachIndexed{ index, line -> onEach(index, line) }
 
     open fun onEach(index: Int, line: T) {

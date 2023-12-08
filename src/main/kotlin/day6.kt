@@ -30,8 +30,8 @@ class Day6(inputType: InputType = InputType.FINAL) : AocRunner<Day6Line, Long>(
     Day6Parser(),
     inputType
 ) {
-    val races = inputLines[0].values.zip(inputLines[1].values).map { Race(it.first, it.second) }
-    val fullRace = Race(inputLines[0].value, inputLines[1].value)
+    val races = lines[0].values.zip(lines[1].values).map { Race(it.first, it.second) }
+    val fullRace = Race(lines[0].value, lines[1].value)
 
     override fun partOne(): Long {
         return races.map { it.wayOfWinning().count() }.reduce { acc, i -> acc * i }.toLong()

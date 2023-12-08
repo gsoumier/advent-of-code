@@ -110,11 +110,11 @@ class CamelCards(inputType: InputType = InputType.FINAL) : AocRunner<CamelCardsL
     inputType
 ) {
     override fun partOne(): Int {
-        return inputLines.sorted().mapIndexed { i, card -> (i + 1) * card.bit }.sum()
+        return lines.sorted().mapIndexed { i, card -> (i + 1) * card.bit }.sum()
     }
 
     override fun partTwo(): Int {
-        val cardsLines = inputLines.sortedWith(CamelCardsComparatorWithJokerRule)
+        val cardsLines = lines.sortedWith(CamelCardsComparatorWithJokerRule)
         cardsLines.forEach { println(it) }
         return cardsLines.mapIndexed { i, card -> (i + 1) * card.bit }.sum()
 

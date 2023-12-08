@@ -42,9 +42,9 @@ class Day5Parser : LineParser<String> {
 
 class Day5(inputType: InputType = InputType.FINAL) : AocRunner<String, Long>(5, Day5Parser(), inputType) {
 
-    private val seeds: List<Long> = inputLines.first().substring(7).split(" ").map { it.toLong() }.toList()
+    private val seeds: List<Long> = lines.first().substring(7).split(" ").map { it.toLong() }.toList()
 
-    private val mappers: List<RangeMapper> = inputLines.drop(2).splitWhen { it.isBlank() }.map { Day5Parser().parseMapper(it) }
+    private val mappers: List<RangeMapper> = lines.drop(2).splitWhen { it.isBlank() }.map { Day5Parser().parseMapper(it) }
 
     private fun getDestValue(value: Long, type: String = "seed"): Long {
         val nextMapper: RangeMapper = mappers.firstOrNull { it.source == type } ?: return value
