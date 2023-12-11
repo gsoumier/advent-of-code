@@ -13,22 +13,19 @@ class DayXXXParser : LineParser<DayXXXLine> {
     }
 }
 
-class DayXXX(inputType: InputType = InputType.FINAL) : AocRunner<DayXXXLine, Int>(
-    6, // FIXME : bien penser à changer
+class DayXXX(inputType: InputType = InputType.FINAL) : AocRunner<DayXXXLine, Long>(
+    12, // FIXME : bien penser à changer
     DayXXXParser(),
     inputType
 ) {
-    override fun partOne(): Int {
+    override fun partOne(): Long {
         TODO("Not yet implemented")
     }
 
-    override fun partTwo(): Int {
+    override fun partTwo(): Long {
         TODO("Not yet implemented")
     }
 
-    override fun onEach(index: Int, line: DayXXXLine) {
-        super.onEach(index, line)
-    }
 }
 
 

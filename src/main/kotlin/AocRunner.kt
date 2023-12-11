@@ -5,16 +5,15 @@ interface LineParser<T>{
     fun parseLine(line: String) : T? = parseLine(0, line)
 }
 
+object StringLineParser : LineParser<String> {
+    override fun parseLine(index: Int, line: String): String = line
+}
+
 abstract class AocRunner<T, Out>(day: Int, val parser: LineParser<T>, inputType: InputType = InputType.FINAL) {
 
     val stringList = aocInputStream(day, inputType).bufferedReader().readLines()
     val lines: List<T> = stringList
         .mapIndexedNotNull() { index, line -> parser.parseLine(index, line) }
-        .onEachIndexed{ index, line -> onEach(index, line) }
-
-    open fun onEach(index: Int, line: T) {
-
-    }
 
     abstract fun partOne() : Out
     abstract fun partTwo() : Out

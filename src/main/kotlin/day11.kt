@@ -1,17 +1,13 @@
 import kotlin.math.max
 import kotlin.math.min
 
-class Day11Parser : LineParser<String> {
-    override fun parseLine(index: Int, line: String): String {
-        return line
-    }
-}
+
 
 private const val galaxy = '#'
 
 class Day11(inputType: InputType = InputType.FINAL) : AocRunner<String, Long>(
     11,
-    Day11Parser(),
+    StringLineParser,
     inputType
 ) {
 
