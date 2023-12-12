@@ -15,28 +15,19 @@ class Day12Test {
             parser.parseLine(1, "?###???????? 3,2,1") shouldBe sampleDay12
         }
     }
-//
-//
-//    @Nested
-//    inner class Day12LineTest {
-//        @Test
-//        fun matches() {
-//            sampleDay12.matches(".###.##..#..") shouldBe true
-//            sampleDay12.matches("###..##..#..") shouldBe false
-//        }
-//        @Test
-//        fun test() {
-//            sampleDay12.countMatchingArrangments() shouldBe 10
-//        }
-//        @Test
-//        fun test2() {
-//            Day12Line(".??....??????.", listOf(1)).countMatchingArrangments() shouldBe 8
-//        }
-//        @Test
-//        fun testEnd() {
-//            Day12Line("??", listOf(1)).countMatchingArrangments() shouldBe 2
-//        }
-//    }
+
+
+    @Nested
+    inner class Day12LineTest {
+        @Test
+        fun shouldMatch() {
+            sampleDay12.damagedString.matchesStartOf("###..##..#..") shouldBe false
+        }
+        @Test
+        fun shouldNotMatch() {
+            sampleDay12.damagedString.matchesStartOf("###..##..#..") shouldBe false
+        }
+    }
     
     @Nested
     inner class Day12RunnerTest {

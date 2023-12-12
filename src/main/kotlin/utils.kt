@@ -30,7 +30,7 @@ fun List<String>.splitWhen(predicate: (String) -> Boolean): List<List<String>> {
     return result.toList()
 }
 
-fun <A, B>List<A>.pmap(f: suspend (A) -> B): List<B> = runBlocking {
+fun <A, B> List<A>.pmap(f: suspend (A) -> B): List<B> = runBlocking {
     map { async(Dispatchers.Default) { f(it) } }.map { it.await() }
 }
 
