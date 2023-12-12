@@ -1,4 +1,3 @@
-import kotlin.math.abs
 import kotlin.math.min
 
 
@@ -9,7 +8,7 @@ import kotlin.math.min
  * J is a 90-degree bend connecting north and west.
  * 7 is a 90-degree bend connecting south and west.
  * F is a 90-degree bend connecting south and east.
- * . is ground; there is no pipe in this tile.
+ * . is ground; there is no pipe in this CharPoint.
  * S is the starting position
  */
 enum class TileType(val value: Char, val from: Direction, val to: Direction) {
@@ -34,44 +33,23 @@ val turns = setOf(
     TileType.TURN_F,
 )
 
-data class Tile(val coord: Coord, val value: Char) {
+fun CharPoint.type(): TileType? = TileType.entries.find { it.value == value }
 
-    val type: TileType?
-        get() = TileType.entries.find { it.value == value }
-
-    fun whereTo(from: Direction): Direction? {
-        return type?.from(from.opposite())
-    }
-
-}
-
-class Day10Parser : LineParser<String> {
-    override fun parseLine(index: Int, line: String): String {
-        return line
-    }
-}
+fun CharPoint.whereTo(from: Direction): Direction? = type()?.from(from.opposite())
+    
 
 class Day10(inputType: InputType = InputType.FINAL) : AocRunner<String, Int>(
     10,
-    Day10Parser(),
+    StringLineParser,
     inputType
 ) {
 
-    val tiles = lines.flatMapIndexed { lineIndex: Int, s: String ->
-        s.mapIndexed { charIndex, c ->
-            Tile(
-                Coord(
-                    charIndex,
-                    lineIndex
-                ), c
-            )
-        }
-    }
-    val tilesByCoord = tiles.associateBy { it.coord }
-    val start = tiles.find { it.value == 'S' } ?: error("No start found")
+    val charMap = lines.toCharMap()
 
-    fun way(startingDirection: Direction): List<Tile>? {
-        val res = mutableListOf<Tile>()
+    val start = charMap.find { it.value == 'S' } ?: error("No start found")
+
+    fun way(startingDirection: Direction): List<CharPoint>? {
+        val res = mutableListOf<CharPoint>()
         var currentDirection = startingDirection
         var current = start.getTile(currentDirection) ?: return null
         current.whereTo(currentDirection) ?: return null
@@ -83,8 +61,8 @@ class Day10(inputType: InputType = InputType.FINAL) : AocRunner<String, Int>(
         return res
     }
 
-    private fun Tile.getTile(direction: Direction) =
-        tilesByCoord[coord.to(direction)]
+    private fun CharPoint.getTile(direction: Direction) =
+        charMap[coord.to(direction)]
 
     override fun partOne(): Int {
         val ways = getWays()
@@ -93,7 +71,7 @@ class Day10(inputType: InputType = InputType.FINAL) : AocRunner<String, Int>(
 
     private fun getWays() = Direction.entries.mapNotNull { way(it) }
 
-    private fun Coord.isInLine(border: List<Tile>): Boolean {
+    private fun Coord.isInLine(border: List<CharPoint>): Boolean {
         val borderEncountered = border
             .filter { it.coord.y == y && it.coord.x < x }
             .filter { it.value != '-' }
@@ -103,27 +81,27 @@ class Day10(inputType: InputType = InputType.FINAL) : AocRunner<String, Int>(
         return count % 2 != 0
     }
 
-    private fun Coord.isInCol(border: List<Tile>): Boolean {
+    private fun Coord.isInCol(border: List<CharPoint>): Boolean {
         val borderEncountered = border
             .filter { it.coord.y < y && it.coord.x == x }
             .filter { it.value != '|' }
         val nbW = borderEncountered.countTo(Direction.W)
-        val nbE = borderEncountered.countTo( Direction.E )
+        val nbE = borderEncountered.countTo(Direction.E)
         val count = borderEncountered.count { it.value == '-' } + min(nbE, nbW)
         return count % 2 != 0
     }
 
-    private fun List<Tile>.countTo(direction: Direction) =
-        count { border -> border.type?.takeIf { it in turns }?.to == direction }
+    private fun List<CharPoint>.countTo(direction: Direction) =
+        count { border -> border.type()?.takeIf { it in turns }?.to == direction }
 
 
-    private fun List<Tile>.countFrom(direction: Direction) =
-        count { border -> border.type?.takeIf { it in turns }?.from == direction }
+    private fun List<CharPoint>.countFrom(direction: Direction) =
+        count { border -> border.type()?.takeIf { it in turns }?.from == direction }
 
 
     override fun partTwo(): Int {
-        val border = getWays().first() + tiles.first { it.value == 'S' }.copy(value = '|')
-        val res = tiles.filter { it !in border }.filter {
+        val border = getWays().first() + start.copy(value = '|')
+        val res = charMap.charPoints.filter { it !in border }.filter {
             it.coord.isInLine(border) && it.coord.isInCol(border)
         }
         return res.count()

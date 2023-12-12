@@ -13,6 +13,8 @@ enum class InputType {
     FINAL, SAMPLE
 }
 
+fun List<String>.getCols() = (0..<first().length).map { colIndex -> map { it[colIndex] } }
+
 fun List<String>.splitWhen(predicate: (String) -> Boolean): List<List<String>> {
     val result = mutableListOf<List<String>>()
     var sublist = mutableListOf<String>()
@@ -31,3 +33,14 @@ fun List<String>.splitWhen(predicate: (String) -> Boolean): List<List<String>> {
 fun <A, B>List<A>.pmap(f: suspend (A) -> B): List<B> = runBlocking {
     map { async(Dispatchers.Default) { f(it) } }.map { it.await() }
 }
+
+fun List<String>.toCharMap() = CharMap(flatMapIndexed { lineIndex: Int, s: String ->
+    s.mapIndexed { charIndex, c ->
+        CharPoint(
+            Coord(
+                charIndex,
+                lineIndex
+            ), c
+        )
+    }
+})

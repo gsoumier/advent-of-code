@@ -48,9 +48,6 @@ class Day9(inputType: InputType = InputType.FINAL) : AocRunner<Day9Line, Long>(
         return lines.map { it.previousNumbers().last() }.sum()
     }
 
-    override fun onEach(index: Int, line: Day9Line) {
-        super.onEach(index, line)
-    }
 }
 
 

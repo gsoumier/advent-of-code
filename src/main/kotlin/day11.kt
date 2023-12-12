@@ -11,9 +11,7 @@ class Day11(inputType: InputType = InputType.FINAL) : AocRunner<String, Long>(
     inputType
 ) {
 
-//    private val expendedUniverse = lines.expendUniverse(1)
-
-    val galaxies = lines.flatMapIndexed { lineIndex: Int, s: String ->
+    private val galaxies = lines.flatMapIndexed { lineIndex: Int, s: String ->
         s.mapIndexedNotNull { charIndex, c ->
             Coord(
                 charIndex,
@@ -21,57 +19,24 @@ class Day11(inputType: InputType = InputType.FINAL) : AocRunner<String, Long>(
             ).takeIf { c == galaxy }
         }
     }
-    val cols = (0..<lines.first().length).map { colIndex -> lines.map { it[colIndex] } }
+    private val cols = lines.getCols()
 
-    val emptyLines = lines.mapIndexedNotNull { index, s -> index.takeUnless { s.contains('#') } }
-    val emptyCols = cols.mapIndexedNotNull { index, s -> index.takeUnless { s.contains('#') } }
+    private val emptyLines = lines.mapIndexedNotNull { index, s -> index.takeUnless { s.contains(galaxy) } }
+    private val emptyCols = cols.mapIndexedNotNull { index, s -> index.takeUnless { s.contains(galaxy) } }
 
 
-    fun distanceBetween(coord: Coord, other: Coord, emptyCount: Long = 2L): Long {
-        val minX = min(coord.x, other.x).toLong()
-        val maxX = max(coord.x, other.x).toLong()
-        val minY = min(coord.y, other.y).toLong()
-        val maxY = max(coord.y, other.y).toLong()
-        val nbEmptyLines = emptyCols.count { it in minX..maxX }
-        val nbEmptyCol = emptyLines.count { it in minY..maxY }
-
-        return maxX - minX - nbEmptyLines + nbEmptyLines * emptyCount + maxY - minY - nbEmptyCol + nbEmptyCol * emptyCount
+    private fun distanceBetween(coord: Coord, other: Coord, emptyCount: Long = 2L): Long {
+        val xDistance = axisDistance(coord, other, emptyCount, { it.x }, emptyCols)
+        val yDistance = axisDistance(coord, other, emptyCount, { it.y }, emptyLines)
+        return xDistance + yDistance
     }
 
-
-    private fun List<String>.expendUniverse(times: Int): List<String> {
-        return expendLines(times).expendCols(times)
-    }
-
-    private fun List<String>.expendLines(times: Int): List<String> {
-        val res = mutableListOf<String>()
-        forEach {
-            res.add(it)
-            if (!it.contains(galaxy)) {
-                (0..times).forEach { _ -> res.add(it) }
-            }
-        }
-        return res
-    }
-
-    private fun List<String>.expendCols(times: Int): List<String> {
-        var res = listOf<String>()
-        (0..<first().length).forEach { colIndex ->
-            val col = map { it[colIndex] }
-            res = res.addCol(col)
-            if (!col.contains(galaxy)) {
-                (0..times).forEach { _ -> res = res.addCol(col) }
-            }
-        }
-        return res
-    }
-
-    override fun partOne(): Long {
-        return calculate()
-    }
-
-    override fun partTwo(): Long {
-        return calculate(1_000_000L)
+    private fun axisDistance(coord: Coord, other: Coord, emptyCount: Long, axis: (Coord)-> Int, emptyCrossAxis: List<Int> ): Long {
+        val minX = min(axis(coord), axis(other)).toLong()
+        val maxX = max(axis(coord), axis(other)).toLong()
+        val nbEmptyCols = emptyCrossAxis.count { it in minX..maxX }
+        val axisDistance = maxX - minX - nbEmptyCols + nbEmptyCols * emptyCount
+        return axisDistance
     }
 
     fun calculate(emptyCount: Long = 2L): Long {
@@ -82,12 +47,13 @@ class Day11(inputType: InputType = InputType.FINAL) : AocRunner<String, Long>(
         }.sum()
     }
 
+    override fun partOne(): Long {
+        return calculate()
+    }
 
-
-}
-
-private fun List<String>.addCol(col: List<Char>): List<String> {
-    return col.mapIndexed { index, c -> this.getOrElse(index) { "" } + c }
+    override fun partTwo(): Long {
+        return calculate(1_000_000L)
+    }
 }
 
 

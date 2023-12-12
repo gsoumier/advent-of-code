@@ -1,37 +1,22 @@
-enum class HandType {
-    FIVE {
+enum class HandType(val maxCardNumber: Int) {
+    FIVE (5),
+    FOUR (4),
+    FULL (3){
         override fun match(value: String, jokerRule: Boolean) =
-            value.maxCardNumber(jokerRule) == 5
-    },
-    FOUR {
-        override fun match(value: String, jokerRule: Boolean) =
-            value.maxCardNumber(jokerRule) == 4
-    },
-    FULL {
-        override fun match(value: String, jokerRule: Boolean) =
-            if(jokerRule && value.numberOfJokers() == 1)
+            if (jokerRule && value.numberOfJokers() == 1)
                 value.cardNumbers().filter { it.second == 2 }.size == 2
-        else
-            value.cardNumbers().map { it.second }.containsAll(listOf(2, 3))
+            else
+                value.cardNumbers().map { it.second }.containsAll(listOf(2, 3))
     },
-    THREE {
-        override fun match(value: String, jokerRule: Boolean) =
-            value.maxCardNumber(jokerRule) == 3
-    },
-    TWO_PAIRS {
-        override fun match(value: String, jokerRule: Boolean) =
-            value.cardNumbers().filter { it.second == 2 }.size == 2
-    },
-    ONE_PAIR {
-        override fun match(value: String, jokerRule: Boolean) =
-            value.maxCardNumber(jokerRule) == 2
-    },
-    HIGH {
+    THREE (3),
+    TWO_PAIRS (2),
+    ONE_PAIR (2),
+    HIGH (1){
         override fun match(value: String, jokerRule: Boolean) =
             true
     };
 
-    abstract fun match(value: String, jokerRule: Boolean): Boolean
+    open fun match(value: String, jokerRule: Boolean): Boolean = value.maxCardNumber(jokerRule) == maxCardNumber
 
     fun String.cardNumbers(): List<Pair<Char, Int>> = map { it }.groupBy { it }.map { (k, v) -> k to v.size }
 
@@ -40,7 +25,6 @@ enum class HandType {
             cardNumbers().filter { it.first != 'J' }.maxOfOrNull { it.second }?.let { it + numberOfJokers() } ?: 5
         else
             cardNumbers().maxOfOrNull { it.second }
-
 
     fun String.numberOfJokers(): Int =
         (cardNumbers().find { it.first == 'J' }?.second ?: 0)
@@ -66,7 +50,7 @@ data class CamelHand(val value: String) : Comparable<CamelHand> {
             "A" -> 14
             "K" -> 13
             "Q" -> 12
-            "J" -> if(jokerRule) 0 else 11
+            "J" -> if (jokerRule) 0 else 11
             "T" -> 10
             else -> toInt()
         }
@@ -81,7 +65,7 @@ data class CamelHand(val value: String) : Comparable<CamelHand> {
         (other.getHandType(jokerRule).ordinal - getHandType(jokerRule).ordinal)
             .takeIf { it != 0 }
             ?.let { return it }
-        return value.zip(other.value).map { ("" + it.first).power(jokerRule ) - ("" + it.second).power(jokerRule) }
+        return value.zip(other.value).map { ("" + it.first).power(jokerRule) - ("" + it.second).power(jokerRule) }
             .dropWhile { it == 0 }
             .first()
     }
@@ -89,7 +73,7 @@ data class CamelHand(val value: String) : Comparable<CamelHand> {
 
 object CamelCardsComparatorWithJokerRule : Comparator<CamelCardsLine> {
     override fun compare(o1: CamelCardsLine?, o2: CamelCardsLine?): Int {
-        if(o1 == null || o2 == null)
+        if (o1 == null || o2 == null)
             return 0
         return o1.hand.compareTo(o2.hand, true)
     }
@@ -120,9 +104,6 @@ class CamelCards(inputType: InputType = InputType.FINAL) : AocRunner<CamelCardsL
 
     }
 
-    override fun onEach(index: Int, line: CamelCardsLine) {
-        super.onEach(index, line)
-    }
 }
 
 
