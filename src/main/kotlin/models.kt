@@ -32,7 +32,7 @@ enum class Direction {
 data class CharPoint(val coord: Coord, var value: Char)
 
 class CharMap(val charPoints: List<CharPoint>){
-    private val map = charPoints.associateBy { it.coord }
+    val map = charPoints.associateBy { it.coord }
     operator fun get(coord: Coord) = map[coord]
     fun find(predicate: (CharPoint) -> Boolean): CharPoint? {
         return charPoints.find(predicate)

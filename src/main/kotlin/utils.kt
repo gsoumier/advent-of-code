@@ -13,7 +13,9 @@ enum class InputType {
     FINAL, SAMPLE
 }
 
-fun List<String>.getCols() = (0..<first().length).map { colIndex -> map { it[colIndex] } }
+fun List<String>.getCols(): List<List<Char>> = (0..<first().length).map { colIndex -> map { it[colIndex] } }
+
+fun List<String>.getStringCols(): List<String> = getCols().map { it.joinToString("") }
 
 fun List<String>.splitWhen(predicate: (String) -> Boolean): List<List<String>> {
     val result = mutableListOf<List<String>>()
