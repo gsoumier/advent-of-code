@@ -3,7 +3,7 @@ import kotlin.math.abs
 data class Coord(
     val x: Int,
     val y: Int,
-) {
+) : Comparable<Coord> {
     fun to(direction: Direction) = when (direction) {
         Direction.N -> Coord(x, y - 1)
         Direction.E -> Coord(x + 1, y)
@@ -11,8 +11,12 @@ data class Coord(
         Direction.W -> Coord(x - 1, y)
     }
 
-    fun distanceTo(other: Coord) : Int {
-        return abs(other.y - y ) + abs(other.x - x)
+    fun distanceTo(other: Coord): Int {
+        return abs(other.y - y) + abs(other.x - x)
+    }
+
+    override fun compareTo(other: Coord): Int {
+        return 10000 * (y - other.y) + x - other.x
     }
 }
 
@@ -31,7 +35,7 @@ enum class Direction {
 
 data class CharPoint(val coord: Coord, var value: Char)
 
-class CharMap(val charPoints: List<CharPoint>){
+class CharMap(val charPoints: List<CharPoint>) {
     val map = charPoints.associateBy { it.coord }
     operator fun get(coord: Coord) = map[coord]
     fun find(predicate: (CharPoint) -> Boolean): CharPoint? {
