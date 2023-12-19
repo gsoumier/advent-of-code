@@ -14,6 +14,8 @@ abstract class AocRunner<T, Out>(day: Int, val parser: LineParser<T>, inputType:
     val stringList = aocInputStream(day, inputType).bufferedReader().readLines()
     val lines: List<T> = stringList
         .mapIndexedNotNull() { index, line -> parser.parseLine(index, line) }
+    val nbCols = stringList.first().length
+    val nbLines = stringList.size
 
     abstract fun partOne() : Out
     abstract fun partTwo() : Out
