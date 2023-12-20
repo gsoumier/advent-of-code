@@ -1,35 +1,78 @@
-import kotlin.math.min
+data class Edge(val coord1:Coord, val coord2: Coord, val dist: Dist)
 
-data class CurrentWay(val nbLines: Int, val nbCols: Int, val path: List<CharPoint>) {
-    fun current() = path.last()
-    fun nextAllowed(): List<Coord> {
-        val current = current().coord
-        val pairs = path.map { it.coord }.zipWithNext()
-        return current.neighbours()
-            .filter { it.x in 0..<nbCols && it.y in 0..<nbLines }
-            .filter { path.asReversed().getOrNull(1)?.coord != it }
-            .filter {
-                path.size < 4 ||
-                        (listOf(it) + path.asReversed().subList(0, 4).map { it.coord }).isNotSameDirection(it)
-            }
-            .filter { !pairs.contains(current to it) }
+data class Dist(val heatLoss: Int, val direction: Direction? = null, val stepsInDir: Int? = 1) : Comparable<Dist> {
+    override fun compareTo(other: Dist): Int {
+        return heatLoss - other.heatLoss
     }
 
-    fun add(charPoint: CharPoint): CurrentWay {
-        return copy(path = path + charPoint)
+    operator fun plus(other: Dist) : Dist {
+        return Dist(
+            heatLoss + other.heatLoss,
+            other.direction,
+            if(direction == other.direction) (stepsInDir?:0) + (other.stepsInDir?:0) else other.stepsInDir
+        ).takeIf { (it.stepsInDir?:0) < 4 && direction != other.direction?.opposite() } ?: Dist(Int.MAX_VALUE)
     }
 
-    fun heat(): Int {
-        return path.sumOf { it.intValue }
-    }
-
-    fun cacheKey(): String {
-        return path.asReversed().subList(0, min(1, path.size)).map { it.coord }.reversed().toString()
-    }
 }
 
-fun List<Coord>.isNotSameDirection(coord: Coord): Boolean {
-    return !(all { it.x == coord.x } || all { it.y == coord.y })
+fun findShortestPath(map: CharMap, source: Coord, target: Coord): ShortestPathResult {
+
+    val edges = map.charPoints.flatMap { point -> map.neighboursInMap(point).map { Edge(point.coord, it.second.coord, Dist(it.second.intValue, it.first)) } }
+
+    val dist = mutableMapOf<Coord, MutableMap<Direction,Dist>>()
+    val prev = mutableMapOf<Coord, MutableMap<Direction,Coord?>>()
+    val q = map.map.keys.toSortedSet()
+
+    q.forEach { v ->
+        dist[v] = Direction.entries.associateWith { Dist(Int.MAX_VALUE) }.toMutableMap()
+        prev[v] = Direction.entries.associateWith {null}.toMutableMap()
+    }
+    dist[source] = Direction.entries.associateWith { Dist(0) }.toMutableMap()
+
+    while (q.isNotEmpty()) {
+        val u = q.minByOrNull { dist[it]?.minOf { it.value } ?: Dist(0) }
+        q.remove(u)
+
+        if (u == target) {
+            break
+        }
+
+        edges
+            .filter { it.coord1 == u }
+            .forEach { edge ->
+                val v = edge.coord2
+
+                Direction.entries.forEach { dir->
+                    val alt = dist[u]!!.minOf { it.value + edge.dist }
+                        if (alt < dist[v]!![dir]!!) {
+                        dist[v]!![dir] = alt
+                        prev[v]!![dir] = u
+                    }
+                }
+            }
+    }
+
+    return ShortestPathResult(prev, dist, source, target)
+}
+
+class ShortestPathResult(val prev: Map<Coord, Map<Direction,Coord?>>, val dist: Map<Coord, Map<Direction,Dist>>, val source: Coord, val target: Coord) {
+
+//    fun shortestPath(from: Coord = source, to: Coord = target, list: List<Coord> = emptyList()): List<Coord> {
+//        val last = prev[to] ?: return if (from == to) {
+//            list + to
+//        } else {
+//            emptyList()
+//        }
+//        return shortestPath(from, last, list) + to
+//    }
+
+    fun shortestDistance(): Int? {
+        val shortest = dist[target]?.minOf { it.value }
+        if (shortest?.heatLoss == Integer.MAX_VALUE) {
+            return null
+        }
+        return shortest?.heatLoss
+    }
 }
 
 class Day17(inputType: InputType = InputType.FINAL) : AocRunner<String, Long>(
@@ -37,66 +80,18 @@ class Day17(inputType: InputType = InputType.FINAL) : AocRunner<String, Long>(
     StringLineParser,
     inputType
 ) {
-    var map = lines.toCharMap().map
+    var map = lines.toCharMap()
 
-    val cache = mutableMapOf<String, List<CharPoint>>()
-    val startCache = mutableMapOf<Coord, Int>()
-
-    var origin = map[Coord(0, 0)]!!
-    var dest = map[Coord(nbCols - 1, nbLines - 1)]!!
-    val currentMinFound =
-        (1..<nbCols).flatMap { listOf(map[Coord(it, it - 1)]!!, map[Coord(it, it)]!!) }.fold(listOf(origin)){ acc, charPoint -> (acc + charPoint).also {
-            startCache[charPoint.coord] = it.sumOf { it.intValue }
-        } }.sumOf { it.intValue }
-
-    fun calculateMinHeatPathToDest(current: Coord, currentWay: CurrentWay, maxHeat: Int? = null): List<CharPoint>? {
-        if (current == dest.coord)
-            return listOf(dest)
-
-        val heat = currentWay.heat()
-        startCache.compute(current) {
-            _, minHeat -> min(minHeat ?: heat, heat)
-        }
-        startCache[current]?.let { if(heat > it) return null }
-        maxHeat?.let {
-            if (heat > maxHeat) return null
-        }
-        if (heat > currentMinFound) {
-            return null
-        }
+    var origin = Coord(0, 0)
+    var dest = Coord(nbCols - 1, nbLines - 1)
 
 
-        cache[currentWay.cacheKey()]?.also {
-//            println("List : $it retrieve from cache")
-        }?.let { return it }
 
-        val nextAllowed = currentWay.nextAllowed().takeUnless { it.isEmpty() } ?: return null
-        if (nextAllowed.contains(dest.coord)) {
-            return listOf(map[current]!!, dest).also { cache[currentWay.cacheKey()] = it }
-        }
-
-        val firstPath = nextAllowed.firstNotNullOfOrNull {
-            calculateMinHeatPathToDest(it, currentWay.add(map[it]!!))
-        } ?: return null
-        val newMaxHeat = min(
-            firstPath.sumOf { it.intValue } + heat, maxHeat ?: Int.MAX_VALUE)
-
-        return (nextAllowed
-            .mapNotNull { next ->
-                calculateMinHeatPathToDest(
-                    next,
-                    currentWay.add(map[next]!!),
-                    newMaxHeat
-                )?.let { listOf(map[current]!!) + it }
-            }
-            .minByOrNull { it.sumOf { it.intValue } }
-            ?: (listOf(map[current]!!) + firstPath))
-            .also { cache[currentWay.cacheKey()] = it }
-    }
 
     override fun partOne(): Long {
-        val res = calculateMinHeatPathToDest(origin.coord, CurrentWay(nbLines, nbCols, listOf(origin)))!!
-        return res.drop(1).sumOf { it.intValue }.toLong()
+        val res = findShortestPath(map, origin, dest)
+//        res.shortestPath().forEach { println(it) }
+        return res.shortestDistance()!!.toLong()
     }
 
     override fun partTwo(): Long {

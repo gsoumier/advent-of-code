@@ -65,5 +65,15 @@ class CharMap(val charPoints: List<CharPoint>) {
     fun find(predicate: (CharPoint) -> Boolean): CharPoint? {
         return charPoints.find(predicate)
     }
+
+    fun neighboursInMap(point: CharPoint): List<Pair<Direction, CharPoint>> {
+        val coord = point.coord
+        return listOfNotNull(
+            get(coord.east())?.let { Direction.E to it},
+            get(coord.south())?.let { Direction.S to it},
+            get(coord.west())?.let { Direction.W to it},
+            get(coord.north())?.let { Direction.N to it},
+        )
+    }
 }
 
