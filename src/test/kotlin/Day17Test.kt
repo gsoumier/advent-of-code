@@ -16,7 +16,7 @@ class Day17Test {
 
         @Test
         fun partTwo() {
-            runner.partTwo() shouldBe 99
+            runner.partTwo() shouldBe 94
         }
     }
 

@@ -20,6 +20,8 @@ abstract class AocRunner<T, Out>(day: Int, val parser: LineParser<T>, inputType:
     abstract fun partOne() : Out
     abstract fun partTwo() : Out
 
+    val isDebug = inputType == InputType.SAMPLE
+
     fun run() {
         val part1TimeInMillis = measureTimeMillis { println("Part 1 result: ${partOne()}") }
         println("Part 1 duration $part1TimeInMillis ms")

@@ -1,77 +1,70 @@
-data class Edge(val coord1:Coord, val coord2: Coord, val dist: Dist)
+data class Node(val coord: Coord, val dir: Direction, val stepsInDir: Int)
 
-data class Dist(val heatLoss: Int, val direction: Direction? = null, val stepsInDir: Int? = 1) : Comparable<Dist> {
-    override fun compareTo(other: Dist): Int {
-        return heatLoss - other.heatLoss
-    }
+fun findShortestPath(map: CharMap, source: Coord, target: Coord, part2: Boolean = false): ShortestPathResult {
 
-    operator fun plus(other: Dist) : Dist {
-        return Dist(
-            heatLoss + other.heatLoss,
-            other.direction,
-            if(direction == other.direction) (stepsInDir?:0) + (other.stepsInDir?:0) else other.stepsInDir
-        ).takeIf { (it.stepsInDir?:0) < 4 && direction != other.direction?.opposite() } ?: Dist(Int.MAX_VALUE)
-    }
 
-}
+    val dist = mutableMapOf<Node, Int>()
+    val prev = mutableMapOf<Node, Node?>()
+    val q = (mutableSetOf<Node>())
 
-fun findShortestPath(map: CharMap, source: Coord, target: Coord): ShortestPathResult {
+    val startNode = Node(source, Direction.E, 0)
+    q.add(startNode)
+    dist[startNode] = 0
 
-    val edges = map.charPoints.flatMap { point -> map.neighboursInMap(point).map { Edge(point.coord, it.second.coord, Dist(it.second.intValue, it.first)) } }
-
-    val dist = mutableMapOf<Coord, MutableMap<Direction,Dist>>()
-    val prev = mutableMapOf<Coord, MutableMap<Direction,Coord?>>()
-    val q = map.map.keys.toSortedSet()
-
-    q.forEach { v ->
-        dist[v] = Direction.entries.associateWith { Dist(Int.MAX_VALUE) }.toMutableMap()
-        prev[v] = Direction.entries.associateWith {null}.toMutableMap()
-    }
-    dist[source] = Direction.entries.associateWith { Dist(0) }.toMutableMap()
 
     while (q.isNotEmpty()) {
-        val u = q.minByOrNull { dist[it]?.minOf { it.value } ?: Dist(0) }
+        val u = q.minByOrNull { dist[it] ?: 0 } ?: break
         q.remove(u)
 
-        if (u == target) {
+        if (u.coord == target) {
             break
         }
 
-        edges
-            .filter { it.coord1 == u }
-            .forEach { edge ->
-                val v = edge.coord2
-
-                Direction.entries.forEach { dir->
-                    val alt = dist[u]!!.minOf { it.value + edge.dist }
-                        if (alt < dist[v]!![dir]!!) {
-                        dist[v]!![dir] = alt
-                        prev[v]!![dir] = u
-                    }
+        map.neighboursInMap(u.coord)
+            .filter { it.first != u.dir.opposite() }
+            .filter { !part2 || it.second.coord != target || it.first == u.dir && u.stepsInDir >= 4  }
+            .filter { !part2 || it.first == u.dir || u.stepsInDir >= 4  }
+            .map {
+                Node(
+                    it.second.coord,
+                    it.first,
+                    if (it.first == u.dir) u.stepsInDir + 1 else 1
+                ) to it.second.intValue
+            }
+            .filter { it.first.stepsInDir < (11.takeIf { part2 } ?: 4) }
+            .forEach { (node, cost) ->
+                val alt = dist[u]!! + cost
+                val prevDist = dist[node]
+                if (prevDist == null) {
+                    q.add(node)
+                }
+                if (prevDist == null || alt < prevDist) {
+                    dist[node] = alt
+                    prev[node] = u
                 }
             }
     }
-
     return ShortestPathResult(prev, dist, source, target)
 }
 
-class ShortestPathResult(val prev: Map<Coord, Map<Direction,Coord?>>, val dist: Map<Coord, Map<Direction,Dist>>, val source: Coord, val target: Coord) {
+class ShortestPathResult(val prev: Map<Node, Node?>, val dist: Map<Node, Int>, val source: Coord, val target: Coord) {
 
-//    fun shortestPath(from: Coord = source, to: Coord = target, list: List<Coord> = emptyList()): List<Coord> {
-//        val last = prev[to] ?: return if (from == to) {
-//            list + to
-//        } else {
-//            emptyList()
-//        }
-//        return shortestPath(from, last, list) + to
-//    }
+    fun shortestPath(from: Coord = source, to: Coord = target, list: List<Coord> = emptyList()): List<Coord> {
+        val shortestTargetNode = dist.filter { it.key.coord == to }.minBy { it.value }.key
+        return shortestPath(from, shortestTargetNode, list)
+    }
+
+    private fun shortestPath(from: Coord, to: Node, list: List<Coord> = emptyList()): List<Coord> {
+        val last = prev[to] ?: return if (from == to.coord) {
+            list + to.coord
+        } else {
+            emptyList()
+        }
+        return shortestPath(from, last, list) + to.coord
+    }
 
     fun shortestDistance(): Int? {
-        val shortest = dist[target]?.minOf { it.value }
-        if (shortest?.heatLoss == Integer.MAX_VALUE) {
-            return null
-        }
-        return shortest?.heatLoss
+        return dist.filter { it.key.coord == target }.minOfOrNull { it.value }
     }
 }
 
@@ -86,16 +79,18 @@ class Day17(inputType: InputType = InputType.FINAL) : AocRunner<String, Long>(
     var dest = Coord(nbCols - 1, nbLines - 1)
 
 
-
-
     override fun partOne(): Long {
         val res = findShortestPath(map, origin, dest)
-//        res.shortestPath().forEach { println(it) }
+        if (isDebug)
+            res.shortestPath().forEach { println(it) }
         return res.shortestDistance()!!.toLong()
     }
 
     override fun partTwo(): Long {
-        TODO("Not yet implemented")
+        val res = findShortestPath(map, origin, dest, true)
+        if (isDebug)
+            res.shortestPath().forEach { println(it) }
+        return res.shortestDistance()!!.toLong()
     }
 
 }
