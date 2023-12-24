@@ -46,3 +46,11 @@ fun List<String>.toCharMap() = CharMap(flatMapIndexed { lineIndex: Int, s: Strin
         )
     }
 })
+
+fun Int.quotientAndReminder(divisor: Int): Pair<Int, Int> {
+    return this / divisor to this % divisor
+}
+
+fun Int.pow2(): Long {
+    return toLong().let { it * it }
+}

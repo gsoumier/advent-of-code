@@ -1,8 +1,6 @@
 data class Node(val coord: Coord, val dir: Direction, val stepsInDir: Int)
 
 fun findShortestPath(map: CharMap, source: Coord, target: Coord, part2: Boolean = false): ShortestPathResult {
-
-
     val dist = mutableMapOf<Node, Int>()
     val prev = mutableMapOf<Node, Node?>()
     val q = (mutableSetOf<Node>())
@@ -10,7 +8,6 @@ fun findShortestPath(map: CharMap, source: Coord, target: Coord, part2: Boolean 
     val startNode = Node(source, Direction.E, 0)
     q.add(startNode)
     dist[startNode] = 0
-
 
     while (q.isNotEmpty()) {
         val u = q.minByOrNull { dist[it] ?: 0 } ?: break
