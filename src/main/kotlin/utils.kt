@@ -54,3 +54,9 @@ fun Int.quotientAndReminder(divisor: Int): Pair<Int, Int> {
 fun Int.pow2(): Long {
     return toLong().let { it * it }
 }
+
+fun String.parseZCoord(s: String = ",") =
+    split(s).map { it.trim().toInt() }.let { (x, y, z) -> ZCoord(Coord(x, y), z) }
+
+fun String.parseZCoordLong(s: String = ", ") =
+    split(s).map { it.trim().toLong() }.let { (x, y, z) -> ZCoordLong(x, y, z) }

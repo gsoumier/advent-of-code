@@ -119,3 +119,8 @@ class CharMap(
     val axis = setOf(midW, midN, midE, midS)
 }
 
+
+
+data class ZCoord(val coord: Coord, val z: Int)
+data class ZCoordLong(val x: Long, val y: Long, val z: Long)
+

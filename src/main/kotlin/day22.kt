@@ -25,12 +25,8 @@ class Day22Parser : LineParser<Brick> {
         ) }
     }
 
-    private fun String.parseZCoord() =
-        split(",").map { it.toInt() }.let { (x, y, z) -> ZCoord(Coord(x, y), z) }
 
 }
-
-data class ZCoord(val coord: Coord, val z: Int)
 
 class Day22(inputType: InputType = InputType.FINAL) : AocRunner<Brick, Long>(
     22,
