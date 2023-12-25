@@ -1,16 +1,3 @@
-data class Day21Line(
-    val line: String,
-) {
-
-}
-
-class Day21Parser : LineParser<Day21Line> {
-    override fun parseLine(index: Int, line: String): Day21Line {
-        return Day21Line(
-            line,
-        )
-    }
-}
 
 class Day21(inputType: InputType = InputType.FINAL) : AocRunner<String, Long>(
     21,
@@ -18,9 +5,7 @@ class Day21(inputType: InputType = InputType.FINAL) : AocRunner<String, Long>(
     inputType
 ) {
     val charMap = lines.toCharMap()
-
-    val start = charMap.charPoints.filter { it.value == 'S' }.map { it.coord }.first()
-
+    private val start = charMap.charPoints.filter { it.value == 'S' }.map { it.coord }.first()
     val initialState = GardenState(
         charMap,
         setOf(start),
@@ -28,80 +13,83 @@ class Day21(inputType: InputType = InputType.FINAL) : AocRunner<String, Long>(
     )
 
     override fun partOne(): Long {
-        return initialState.positionsAfter().startingPos.size.toLong()
-    }
-
-    fun GardenState.positionsAfter(
-        nbStep: Int = 64,
-        infiniteMap: Boolean = false,
-    ) = (1..nbStep).fold(this@positionsAfter) { state, _ ->
-        state.addStep(infiniteMap)
+        return initialState.positionsAfter(64).plots
     }
 
 
     override fun partTwo(): Long {
-        val calculatePart2 = calculatePart2(26501365)
-        println("Part 2 methode 1 $calculatePart2")
-        val calculatePart2Bis = calculatePart2Method2(26501365)
-        println("Part 2 methode 2 $calculatePart2Bis")
-        return calculatePart2Bis
+        return calculatePart2Method1(26501365)
     }
 
-    fun calculatePart2Direct(steps: Int) : Int {
-        val realState = initialState.positionsAfter(steps, true)
-        val coordIntMap = realState.getNumberByMapCoord().map { it.key to it.value }.groupBy { it.second }.mapValues { it.value.size }
-        println(coordIntMap)
-        val res = realState.startingPos.size
-        println("Part 2 straight method $res")
-        return res
-    }
-
-    fun calculatePart2(nbTotalIter: Int, cyclicIters: Int = 1): Long {
+    fun calculatePart2Method1(nbTotalIter: Int, cyclicIters: Int = 2): Long {
         var state = initialState
         val cyclicLength = nbCols
         val (totalCyclicIters, nbIterMore) = nbTotalIter.quotientAndReminder(cyclicLength)
 
         (1..cyclicIters * 2).forEach { iter ->
             state = state.positionsAfter(cyclicLength, true)
-            println("Iter $iter nb : ${state.startingPos.size}")
+            println("Iter $iter nb : ${state.plots}")
         }
         state = state.positionsAfter(nbIterMore, true)
 
         val numbersByMapCoord = state.getNumberByMapCoord()
         return ResultCalculator(
-            numbersByMapCoord[Coord(0, 0)]!!,
             numbersByMapCoord[Coord(1, 0)]!!,
+            numbersByMapCoord[Coord(0, 0)]!!,
             numbersByMapCoord.sumCombinationsOf(cyclicIters, cyclicIters),
             numbersByMapCoord.sumCombinationsOf(2 * cyclicIters, 1),
             numbersByMapCoord.sumCombinationsOf(2 * cyclicIters, 0)
         ).calculateResult(totalCyclicIters)
     }
 
+    /**
+     * Ne fonctionne pas avec le cas de test !!!
+     */
     fun calculatePart2Method2(nbTotalIter: Int): Long {
-        val totalCyclicIters = nbTotalIter/nbLines
+        val totalCyclicIters = nbTotalIter / nbLines
+        val odd = nbTotalIter % 2
+
+        println()
+        (3..18).forEach { nb ->
+            charMap.corners.sumOf { cornerCoord ->
+                calculateFrom(
+                    cornerCoord,
+                    nb
+                ).also { println("Test for corner $cornerCoord : $it") }
+            }.also {
+                println("Test sum for nb iter $nb : $it")
+                println()
+            }
+        }
 
         return ResultCalculator(
-            calculateFrom(start, 2*nbLines),
-            calculateFrom(start, 2*nbLines + 1),
-            charMap.corners.sumOf { calculateFrom(it, nbLines * 3/2 - 1) },
-            charMap.corners.sumOf { calculateFrom(it, nbLines/2 - 1) },
+            calculateFrom(start, 2 * nbLines + 1 - odd),
+            calculateFrom(start, 2 * nbLines + odd),
+            charMap.corners.sumOf { cornerCoord ->
+                calculateFrom(cornerCoord, nbLines * 3 / 2 + 1 - odd - 1)
+            },
+            charMap.corners.sumOf { cornerCoord ->
+                calculateFrom(cornerCoord, (nbLines) / 2 + 1 - odd - 1)
+            },
             charMap.axis.sumOf { calculateFrom(it, nbLines - 1) },
         ).calculateResult(totalCyclicIters)
     }
 
-    private fun calculateFrom(start: Coord, iters: Int): Int {
-        return initialState.copy(startingPos = setOf(start)).positionsAfter(iters, false).startingPos.size
+    private fun calculateFrom(start: Coord, iters: Int): Long {
+        val state = initialState.copy(possiblePlots = setOf(start))
+        return state.positionsAfter(iters, false).plots
     }
 
     data class ResultCalculator(
-        val evenCount: Int,
-        val oddCount: Int,
-        val bigTriangleCount: Int,
-        val smallTriangleCount: Int,
-        val axisTriangleCount: Int
+        val evenCount: Long,
+        val oddCount: Long,
+        val bigTriangleCount: Long,
+        val smallTriangleCount: Long,
+        val axisTriangleCount: Long
     ) {
         fun calculateResult(nbIters: Int): Long {
             println(this)
+
             return (nbIters.pow2() * evenCount)
                 .plus(nbIters.dec().pow2() * oddCount)
                 .plus(nbIters.dec() * bigTriangleCount)
@@ -111,7 +99,7 @@ class Day21(inputType: InputType = InputType.FINAL) : AocRunner<String, Long>(
     }
 }
 
-private fun Map<Coord, Int>.sumCombinationsOf(i: Int, j: Int): Int {
+private fun Map<Coord, Long>.sumCombinationsOf(i: Int, j: Int): Long {
     return setOf(
         Coord(i, j),
         Coord(j, -i),
@@ -120,22 +108,34 @@ private fun Map<Coord, Int>.sumCombinationsOf(i: Int, j: Int): Int {
     ).mapNotNull { this[it] }.sum()
 }
 
-data class GardenState(val charMap: CharMap, val startingPos: Set<Coord>, val rocks: Set<Coord>) {
-    fun addStep(infiniteMap: Boolean): GardenState {
-        return copy(startingPos = startingPos
-            .flatMap { charMap.neighboursInMap(it, infiniteMap).map { it.second.coord } }
-            .filter { it.isNotRock() }
-            .toSet()
-        )
+data class GardenState(
+    private val charMap: CharMap,
+    private val possiblePlots: Set<Coord>,
+    private val rocks: Set<Coord>
+) {
+
+    fun positionsAfter(
+        nbStep: Int,
+        mapRepeatable: Boolean = false,
+    ): GardenState {
+        val res = (1..nbStep).fold(this) { state, _ ->
+            state.copy(possiblePlots = state.possiblePlots
+                .flatMap { state.charMap.neighboursInMap(it, mapRepeatable).map { it.second.coord } }
+                .filter { it.isNotRock(mapRepeatable) }
+                .toSet()
+            )
+        }
+        return res
     }
 
-    fun getNumberByMapCoord(): Map<Coord, Int> {
-        return startingPos.groupBy { charMap.mapCoord(it) }.mapValues { it.value.size }
-
+    fun getNumberByMapCoord(): Map<Coord, Long> {
+        return possiblePlots.groupBy { charMap.mapCoord(it) }.mapValues { it.value.size.toLong() }
     }
 
-    private fun Coord.isNotRock() = charMap.get(this, true)?.value != '#'
+    private fun Coord.isNotRock(mapRepeatable: Boolean = false) = charMap.get(this, mapRepeatable)?.value != '#'
 
+    val plots: Long
+        get() = possiblePlots.size.toLong()
 }
 
 

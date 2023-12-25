@@ -1,4 +1,5 @@
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
@@ -31,22 +32,27 @@ class Day21Test {
 
         @Test
         fun partOne() {
-//            runner.positionsAfter(6).startingPos.size.toLong() shouldBe 16
+            runner.initialState.positionsAfter(6).plots shouldBe 16
         }
 
         @Test
-        fun partTwo_direct() {
-            runner.calculatePart2Direct(1000) shouldBe 668697
+        fun partTwo_method1() {
+            runner.calculatePart2Method1(1000) shouldBe 668697
         }
 
         @Test
-        fun partTwo_sample() {
-            runner.calculatePart2Method2(1000) shouldBe 668697
+        fun partTwo_method2() {
+            runner.calculatePart2Method2(1000) shouldNotBe 668697
         }
 
         @Test
-        fun partTwo_real() {
-            Day21().partTwo() shouldBe 584211423220706L
+        fun partTwo_real_method1() {
+            Day21().calculatePart2Method1(26501365, 1) shouldBe 584211423220706L
+        }
+
+        @Test
+        fun partTwo_real_method2() {
+            Day21().calculatePart2Method2(26501365) shouldBe 584211423220706L
         }
 
     }
