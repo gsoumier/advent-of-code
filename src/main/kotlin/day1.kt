@@ -1,40 +1,39 @@
-val digits = mapOf(
-    "one" to "1",
-    "two" to "2",
-    "three" to "3",
-    "four" to "4",
-    "five" to "5",
-    "six" to "6",
-    "seven" to "7",
-    "eight" to "8",
-    "nine" to "9",
-)
+import kotlin.math.abs
+
+data class Day1Line(
+    val n1: Long,
+    val n2: Long,
+) {
+
+}
+
+class Day1Parser : LineParser<Day1Line> {
+    override fun parseLine(index: Int, line: String): Day1Line {
+        val (n1, n2) = line.split("   ").map { it.toLong() }
+        return Day1Line(
+            n1, n2
+        )
+    }
+}
+
+class Day1(inputType: InputType = InputType.FINAL) : AocRunner<Day1Line, Long>(
+    1,
+    Day1Parser(),
+    inputType
+) {
+    override fun partOne(): Long {
+        return lines.map { it.n1 }.sorted().zip(lines.map { it.n2 }.sorted()).sumOf { abs(it.first - it.second) }
+    }
+
+    override fun partTwo(): Long {
+        return lines.sumOf { leftLine ->
+            leftLine.n1 * lines.count { leftLine.n1 == it.n2 }
+        }
+    }
+
+}
+
 
 fun main() {
-    print(object {}.javaClass.getResourceAsStream("day1.txt").bufferedReader().readLines().sumOf { line ->
-        val firstLast = ("" + line.withFirstDigitReplaced().first { it.isDigit() } + line.withLastDigitReplaced()
-            .last { it.isDigit() }).toInt()
-        println(line)
-        println(firstLast)
-        println("-----")
-        firstLast
-    }
-    )
+    Day1().run()
 }
-
-private fun String.withFirstDigitReplaced(): String {
-    return digits.keys
-        .map { it to indexOf(it) }
-        .filter { it.second >= 0 }
-        .minByOrNull { (_, v) -> v }
-        ?.let { replaceFirst(it.first, digits[it.first]!!) } ?: this
-}
-
-private fun String.withLastDigitReplaced(): String {
-    return digits.keys
-        .map { it to lastIndexOf(it) }
-        .filter { it.second >= 0 }
-        .maxByOrNull { (_, v) -> v }
-        ?.let { replaceRange(it.second, it.second + it.first.length, digits[it.first]!!) } ?: this
-}
-

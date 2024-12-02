@@ -9,12 +9,12 @@ object StringLineParser : LineParser<String> {
     override fun parseLine(index: Int, line: String): String = line
 }
 
-abstract class AocRunner<T, Out>(day: Int, val parser: LineParser<T>, inputType: InputType = InputType.FINAL) {
+abstract class AocRunner<T, Out>(day: Int, private val parser: LineParser<T>, inputType: InputType = InputType.FINAL) {
 
     val stringList = aocInputStream(day, inputType).bufferedReader().readLines()
     val lines: List<T> = stringList
-        .mapIndexedNotNull() { index, line -> parser.parseLine(index, line) }
-    val nbCols = stringList.first().length
+        .mapIndexedNotNull { index, line -> parser.parseLine(index, line) }
+    val nbCols = stringList.firstOrNull()?.length ?: 0
     val nbLines = stringList.size
 
     abstract fun partOne() : Out
