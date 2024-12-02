@@ -1,18 +1,13 @@
 import kotlin.math.abs
 
-
 typealias Levels = List<Int>
 
-data class Report(
-    val levels: Levels,
-) {
-    fun subReports() = List(levels.size) { index: Int ->
-        Report(levels.toMutableList().apply { removeAt(index) })
-    }
+fun Levels.subReports() = List(size) { index: Int ->
+    toMutableList().apply { removeAt(index) }
 }
 
-private fun Report.isSafe(): Boolean {
-    return levels.allSameSign() && levels.allBetweenOneAndThree()
+fun Levels.isSafe(): Boolean {
+    return allSameSign() && allBetweenOneAndThree()
 }
 
 private fun Levels.allSameSign(): Boolean {
@@ -24,15 +19,13 @@ private fun Levels.allBetweenOneAndThree(): Boolean {
     return this.zipWithNext().all { (a, b) -> abs(b - a) in (1..3) }
 }
 
-class Day2Parser : LineParser<Report> {
-    override fun parseLine(index: Int, line: String): Report {
-        return Report(
-            line.split(" ").map { it.toInt() },
-        )
+class Day2Parser : LineParser<Levels> {
+    override fun parseLine(index: Int, line: String): Levels {
+        return line.split(" ").map { it.toInt() }
     }
 }
 
-class Day2(inputType: InputType = InputType.FINAL) : AocRunner<Report, Long>(
+class Day2(inputType: InputType = InputType.FINAL) : AocRunner<Levels, Long>(
     2,
     Day2Parser(),
     inputType
@@ -46,10 +39,7 @@ class Day2(inputType: InputType = InputType.FINAL) : AocRunner<Report, Long>(
             initialReport.isSafe() || initialReport.subReports().any { it.isSafe() }
         }.toLong()
     }
-
-
 }
-
 
 fun main() {
     Day2().run()
