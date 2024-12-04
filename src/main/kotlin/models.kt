@@ -46,8 +46,6 @@ enum class Direction {
             W -> E
         }
     }
-
-
 }
 
 fun horizontals() = listOf(Direction.E, Direction.W)
