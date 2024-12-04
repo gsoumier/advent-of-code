@@ -6,20 +6,10 @@ data class Coord(
     val y: Int,
 ) : Comparable<Coord> {
 
-    fun to(direction: Direction, length: Int = 1) = when (direction) {
-        Direction.N -> north(length)
-        Direction.E -> east(length)
-        Direction.S -> south(length)
-        Direction.W -> west(length)
-    }
-
-    fun west(length: Int = 1) = Coord(x - length, y)
-
-    fun south(length: Int = 1) = Coord(x, y + length)
-
-    fun east(length: Int = 1) = Coord(x + length, y)
-
-    fun north(length: Int = 1) = Coord(x, y - length)
+    fun to(direction: Direction, length: Int = 1) = Coord(
+        x + length * direction.nX,
+        y + length * direction.nY,
+    )
 
     fun distanceTo(other: Coord): Int {
         return abs(other.y - y) + abs(other.x - x)
@@ -30,13 +20,24 @@ data class Coord(
         return 1000 * (y - other.y) + x - other.x
     }
 
-    fun neighbours() : List<Coord> {
-       return listOf(east(), south(), west(), north())
+    fun mainNeighbours() : List<Coord> {
+       return Direction.cardinals().map { to(it) }
+    }
+
+    fun extendedNeighbours() : List<Coord> {
+       return Direction.extended().map { to(it) }
     }
 }
 
-enum class Direction {
-    N, E, S, W;
+enum class Direction(val nX: Int, val nY: Int) {
+    N(0, -1),
+    E(1, 0),
+    S(0, 1),
+    W(-1, 0),
+    NE(1, -1),
+    SE(1, 1),
+    SW(-1, 1),
+    NW(-1, -1);
 
     fun opposite(): Direction {
         return when (this) {
@@ -44,13 +45,56 @@ enum class Direction {
             E -> W
             S -> N
             W -> E
+            NE -> SW
+            SE -> NW
+            SW -> NE
+            NW -> SE
         }
+    }
+
+    fun quarterClockwise(): Direction {
+        return when (this) {
+            N -> E
+            E -> N
+            S -> W
+            W -> S
+            NE -> SE
+            SE -> SW
+            SW -> NW
+            NW -> NE
+        }
+    }
+
+    fun quarterAntiClockwise(): Direction {
+        return when (this) {
+            N -> W
+            W -> N
+            S -> E
+            E -> S
+            NE -> NW
+            NW -> SW
+            SW -> SE
+            SE -> NE
+        }
+    }
+
+
+
+    companion object {
+        fun extended() = entries
+
+        fun cardinals() = horizontals() + verticals()
+
+        fun interCardinals() = entries - cardinals()
+
+        fun horizontals() = setOf(E, W)
+
+        fun verticals() = setOf(N, S)
     }
 }
 
-fun horizontals() = listOf(Direction.E, Direction.W)
 
-fun verticals() = listOf(Direction.N, Direction.S)
+
 
 data class CharPoint(val coord: Coord, var value: Char){
     val intValue: Int
@@ -68,6 +112,16 @@ class CharMap(
 
     operator fun get(coord: Coord, mapRepeatable: Boolean = false): CharPoint? {
         return map[coord.takeUnless { mapRepeatable } ?: coord.inInitialMap()]?.value?.let { CharPoint(coord, it) }
+    }
+
+    fun getCharSequence(from: Coord, dir: Direction, size: Int): List<Char>? {
+        return (0..<size).map {
+            this[from.to(dir, it)] ?: return null
+        }.map { it.value }
+    }
+
+    fun getWord(from: Coord, dir: Direction, size: Int): String? {
+        return getCharSequence(from, dir, size)?.joinToString("") { it.toString() }
     }
 
     fun Coord.inInitialMap(): Coord {
@@ -92,12 +146,9 @@ class CharMap(
     }
 
     fun neighboursInMap(coord: Coord, mapRepeatable: Boolean = false): List<Pair<Direction, CharPoint>> {
-        return listOfNotNull(
-            get(coord.east(), mapRepeatable)?.let { Direction.E to it},
-            get(coord.south(), mapRepeatable)?.let { Direction.S to it},
-            get(coord.west(), mapRepeatable)?.let { Direction.W to it},
-            get(coord.north(), mapRepeatable)?.let { Direction.N to it},
-        )
+        return Direction.cardinals().mapNotNull { dir ->
+            get(coord.to(dir), mapRepeatable)?.let { dir to it }
+        }
     }
 
     fun mapCoord(it: Coord) : Coord {

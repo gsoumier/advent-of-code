@@ -4,12 +4,12 @@ import AocRunner
 import CharPoint
 import Coord
 import Direction
+import Direction.Companion.horizontals
+import Direction.Companion.verticals
 import InputType
 import LineParser
 import StringLineParser
-import horizontals
 import toCharMap
-import verticals
 
 data class Day16Line(
     val line: String,
@@ -66,20 +66,10 @@ class Day16(inputType: InputType = InputType.FINAL) : AocRunner<String, Long>(
 
 private fun Char.newDirections(direction: Direction): List<Direction> {
     return when(this){
-        '|' -> if(direction in verticals()) return listOf(direction) else verticals()
-        '-' -> if(direction in horizontals()) return listOf(direction) else horizontals()
-        '/' -> when(direction) {
-            Direction.N -> Direction.E
-            Direction.E -> Direction.N
-            Direction.S -> Direction.W
-            Direction.W -> Direction.S
-        }.let { listOf(it) }
-        '\\' -> when(direction) {
-            Direction.N -> Direction.W
-            Direction.W -> Direction.N
-            Direction.S -> Direction.E
-            Direction.E -> Direction.S
-        }.let { listOf(it) }
+        '|' -> if(direction in verticals()) return listOf(direction) else verticals().toList()
+        '-' -> if(direction in horizontals()) return listOf(direction) else horizontals().toList()
+        '/' -> listOf(direction.quarterClockwise())
+        '\\' -> listOf(direction.quarterAntiClockwise())
         else -> listOf(direction)
      }
 }

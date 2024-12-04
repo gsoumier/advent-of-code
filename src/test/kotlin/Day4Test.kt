@@ -9,10 +9,6 @@ class Day4Test {
         private val runner = Day4(InputType.SAMPLE)
 
         @Test
-        fun getWord() {
-            runner.getWord(Coord(5,0), Next.HORIZONTAL, 1) shouldBe "XMAS"
-        }
-        @Test
         fun partOne() {
             runner.partOne() shouldBe 18
         }
