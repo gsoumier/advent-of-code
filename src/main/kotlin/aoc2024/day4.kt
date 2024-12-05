@@ -1,3 +1,11 @@
+package aoc2024
+
+import AocRunner
+import Direction
+import InputType
+import StringLineParser
+import toCharMap
+
 class Day4(inputType: InputType = InputType.FINAL) : AocRunner<String, Long>(
     4,
     StringLineParser,

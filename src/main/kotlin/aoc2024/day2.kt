@@ -1,3 +1,8 @@
+package aoc2024
+
+import AocRunner
+import InputType
+import LineParser
 import kotlin.math.abs
 
 typealias Levels = List<Int>

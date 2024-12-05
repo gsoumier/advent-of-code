@@ -1,3 +1,9 @@
+package aoc2024
+
+import AocRunner
+import InputType
+import StringLineParser
+
 class Day3(inputType: InputType = InputType.FINAL) : AocRunner<String, Long>(
     3,
     StringLineParser,

@@ -1,3 +1,8 @@
+package aoc2024
+
+import AocRunner
+import InputType
+import LineParser
 import kotlin.math.abs
 
 data class Day1Line(
