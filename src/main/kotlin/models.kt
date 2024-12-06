@@ -55,9 +55,9 @@ enum class Direction(val nX: Int, val nY: Int) {
     fun quarterClockwise(): Direction {
         return when (this) {
             N -> E
-            E -> N
+            E -> S
             S -> W
-            W -> S
+            W -> N
             NE -> SE
             SE -> SW
             SW -> NW
@@ -68,9 +68,9 @@ enum class Direction(val nX: Int, val nY: Int) {
     fun quarterAntiClockwise(): Direction {
         return when (this) {
             N -> W
-            W -> N
+            W -> S
             S -> E
-            E -> S
+            E -> N
             NE -> NW
             NW -> SW
             SW -> SE
@@ -105,13 +105,17 @@ data class CharPoint(val coord: Coord, var value: Char){
 
 class CharMap(
     val charPoints: List<CharPoint>,
-    val nbCols: Int = charPoints.maxOf { it.coord.x } + 1,
-    val nbLines: Int = charPoints.maxOf { it.coord.y } + 1,
 ) {
+    val nbCols: Int = charPoints.maxOf { it.coord.x } + 1
+    val nbLines: Int = charPoints.maxOf { it.coord.y } + 1
     val map = charPoints.associateBy { it.coord }
 
     operator fun get(coord: Coord, mapRepeatable: Boolean = false): CharPoint? {
         return map[coord.takeUnless { mapRepeatable } ?: coord.inInitialMap()]?.value?.let { CharPoint(coord, it) }
+    }
+
+    fun changeChar(coord: Coord, newVal: Char): CharMap {
+        return CharMap(charPoints.map { if(it.coord == coord) it.copy(value = newVal) else it })
     }
 
     fun getCharSequence(from: Coord, dir: Direction, size: Int): List<Char>? {

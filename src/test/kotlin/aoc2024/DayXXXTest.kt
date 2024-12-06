@@ -1,7 +1,9 @@
+package aoc2024
+
+import InputType
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import kotlin.test.Ignore
 
 class DayXXXTest {
 

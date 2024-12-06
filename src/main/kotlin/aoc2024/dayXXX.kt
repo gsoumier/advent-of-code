@@ -1,3 +1,8 @@
+package aoc2024
+
+import AocRunner
+import InputType
+import LineParser
 
 data class DayXXXLine(
     val line: String,
