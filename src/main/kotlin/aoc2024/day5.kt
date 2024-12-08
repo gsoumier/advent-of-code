@@ -3,6 +3,7 @@ package aoc2024
 import AocRunner
 import InputType
 import StringLineParser
+import allPairs
 import splitWhen
 
 
@@ -25,11 +26,7 @@ class Day5(inputType: InputType = InputType.FINAL) : AocRunner<String, Long>(
         .sumOf { it[it.size / 2] }.toLong()
 
     private fun isCorrectOrder(pages: List<Int>): Boolean {
-        pages.forEachIndexed { index, a ->
-            if (pages.drop(index + 1).any { b -> compare(a, b) < 0 })
-                return false
-        }
-        return true
+        return pages.allPairs().all { (a, b) -> compare(a, b) > 0 }
     }
 
     private fun compare(a: Int, b: Int) = if(allRules.contains(b to a)) -1 else 1

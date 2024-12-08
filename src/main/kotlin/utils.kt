@@ -9,6 +9,16 @@ fun aocInputStream(aocDay: Int, type: InputType = InputType.FINAL): InputStream 
 fun String.toNumberList(s: String = " ") =
     split(s).map { it.trim() }.filter { it.isNotBlank() }.map { it.toInt() }
 
+
+fun <T> List<T>.allCombinations(size: Int): List<List<T>> {
+    if (size == 1)
+        return map { listOf(it) }
+    return allCombinations(size - 1)
+        .flatMap { map { op -> listOf(op) + it } }
+}
+
+fun <T> List<T>.allPairs() = flatMapIndexed { index: Int, a: T -> drop(index + 1).map { a to it } }
+
 enum class InputType {
     FINAL, SAMPLE
 }

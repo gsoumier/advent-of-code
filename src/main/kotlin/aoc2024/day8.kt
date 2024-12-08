@@ -3,9 +3,9 @@ package aoc2024
 import AocRunner
 import Coord
 import InputType
-import LineParser
 import StringLineParser
 import Vector
+import allPairs
 import toCharMap
 
 
@@ -30,8 +30,8 @@ class Day8(inputType: InputType = InputType.FINAL) : AocRunner<String, Long>(
 
     private fun antinodes(antena: Char, multiple: Boolean = true): List<Coord> {
         val antenas = map.charPoints.filter { it.value == antena }.map { it.coord }
-        val antinodes = antenas
-            .flatMapIndexed { index: Int, a: Coord -> antenas.drop(index + 1).map { Vector(a, it) } }
+        val antinodes = antenas.allPairs()
+            .map { (a, b) -> Vector(a, b) }
             .flatMap {
                 antinodes(it.b, it, multiple) + antinodes(it.a, it.inverse(), multiple)
             }
