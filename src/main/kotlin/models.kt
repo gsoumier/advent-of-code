@@ -83,8 +83,6 @@ enum class Direction(val nX: Int, val nY: Int) {
         }
     }
 
-
-
     companion object {
         fun extended() = entries
 
@@ -96,6 +94,13 @@ enum class Direction(val nX: Int, val nY: Int) {
 
         fun verticals() = setOf(N, S)
     }
+}
+
+
+data class NavigationPoint(val coord: Coord, val direction: Direction) {
+    fun goStraight(): NavigationPoint = copy(coord = coord.to(direction))
+    fun turnRight(): NavigationPoint = copy(direction = direction.quarterClockwise())
+    fun turnLeft(): NavigationPoint = copy(direction = direction.quarterAntiClockwise())
 }
 
 data class Vector(val a: Coord, val b: Coord) {
