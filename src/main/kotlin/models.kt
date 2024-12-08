@@ -6,9 +6,14 @@ data class Coord(
     val y: Int,
 ) : Comparable<Coord> {
 
-    fun to(direction: Direction, length: Int = 1) = Coord(
-        x + length * direction.nX,
-        y + length * direction.nY,
+    fun to(direction: Direction, times: Int = 1) = Coord(
+        x + times * direction.nX,
+        y + times * direction.nY,
+    )
+
+    fun to(vector: Vector, times: Int = 1) = Coord(
+        x + times * vector.nX,
+        y + times * vector.nY,
     )
 
     fun distanceTo(other: Coord): Int {
@@ -92,6 +97,18 @@ enum class Direction(val nX: Int, val nY: Int) {
         fun verticals() = setOf(N, S)
     }
 }
+
+data class Vector(val a: Coord, val b: Coord) {
+    val nX: Int
+        get() = b.x - a.x
+    val nY: Int
+        get() = b.y - a.y
+
+    fun inverse(): Vector {
+        return Vector(b, a)
+    }
+}
+
 
 
 
