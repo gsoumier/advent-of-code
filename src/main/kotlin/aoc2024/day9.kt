@@ -4,15 +4,13 @@ import AocRunner
 import InputType
 import StringLineParser
 
-sealed class BlockSpace {
-    object Empty : BlockSpace()
-    data class FilePart(val id: Long) : BlockSpace()
-}
-
-data class Space(
-    val id: Long?,
+data class DiskPart(
     val size: Int,
-)
+    val fileId: Long? = null,
+) {
+    val isFreeSpace: Boolean
+        get() = fileId == null
+}
 
 
 class Day9(inputType: InputType = InputType.FINAL) : AocRunner<String, Long>(
@@ -20,71 +18,53 @@ class Day9(inputType: InputType = InputType.FINAL) : AocRunner<String, Long>(
     StringLineParser,
     inputType
 ) {
-    val initial = lines.first().map { "$it".toInt() }
+    private val initial = lines.first().map { "$it".toInt() }.mapIndexed { idx, it ->
+        DiskPart(it, idx.takeIf { it % 2 == 0 }?.let { it.toLong() / 2 })
+    }
 
     override fun partOne(): Long {
-        val representation = spaceRepresentation().representation()
-        val reArranged = representation.dropLastWhile { it == BlockSpace.Empty }.toMutableList()
-        var freeIndex = reArranged.indexOfFirst { it is BlockSpace.Empty }
-        while (freeIndex > 0) {
-            reArranged[freeIndex] = reArranged.removeLast()
-            while (reArranged.last() == BlockSpace.Empty) {
-                reArranged.removeLast()
-            }
-            freeIndex = reArranged.indexOfFirst { it is BlockSpace.Empty }
+        val fragmented = initial.toUnitParts().toMutableList()
+        var emptyPartIndex = fragmented.indexOfFirst { it.isFreeSpace }
+        while (emptyPartIndex > 0) {
+            fragmented.cleanEndOfDisk()
+            fragmented[emptyPartIndex] = fragmented.removeLast()
+            emptyPartIndex = fragmented.indexOfFirst { it.isFreeSpace }
         }
-        return calculate(reArranged)
+        return fragmented.checksum()
     }
 
     override fun partTwo(): Long {
-
-
-        val result = spaceRepresentation().toMutableList()
-        var current = result.maxOf { it.id ?: 0 }
-        while (current > 0) {
-            val fileIndex = result.indexOfLast { it.id == current }
-            val file = result[fileIndex]
-            val spaceIndex = result.indexOfFirst { it.id == null && it.size >= file.size }
+        val fragmented = initial.toMutableList()
+        var currentId = fragmented.maxOf { it.fileId ?: 0 }
+        while (currentId > 0) {
+            val fileIndex = fragmented.indexOfLast { it.fileId == currentId }
+            val file = fragmented[fileIndex]
+            val spaceIndex = fragmented.indexOfFirst { it.fileId == null && it.size >= file.size }
             if (spaceIndex > -1 && spaceIndex < fileIndex) {
-                val space = result[spaceIndex]
-                result[fileIndex] = Space(null, file.size)
-                result[spaceIndex] = file
+                val space = fragmented[spaceIndex]
+                fragmented[fileIndex] = DiskPart(file.size, null)
+                fragmented[spaceIndex] = file
                 if (space.size > file.size) {
-                    result.add(spaceIndex + 1, Space(null, space.size - file.size))
+                    fragmented.add(spaceIndex + 1, DiskPart(space.size - file.size, null))
                 }
             }
-            current--
+            currentId--
         }
-
-
-        return calculate(result.representation())
+        return fragmented.checksum()
     }
 
-    private fun calculate(reArranged: List<BlockSpace>) = reArranged
-        .mapIndexed { index, blockSpace -> index * ((blockSpace as? BlockSpace.FilePart)?.id ?: 0) }
+    private fun MutableList<DiskPart>.cleanEndOfDisk() {
+        while (last().isFreeSpace) {
+            removeLast()
+        }
+    }
+
+    private fun List<DiskPart>.checksum() = toUnitParts()
+        .mapIndexed { index, diskPart -> diskPart.fileId?.let { it * index } ?: 0 }
         .sum()
 
-    private fun List<Space>.representation(): List<BlockSpace> {
-        return flatMap { space ->
-            (0..<space.size).map {
-                (if (space.id != null) {
-                    BlockSpace.FilePart(space.id)
-                } else BlockSpace.Empty)
-            }
-        }
-    }
-
-    private fun spaceRepresentation(): List<Space> {
-        var id = 0L
-        var isFile = true
-        return (initial.map {
-            (if (isFile) {
-                Space(id, it).also { id++ }
-            } else Space(null, it)).also { isFile = !isFile }
-        })
-    }
-
-
+    private fun List<DiskPart>.toUnitParts() =
+        flatMap { diskPart: DiskPart -> (0..<diskPart.size).map { diskPart.copy(size = 1) } }
 }
 
 
