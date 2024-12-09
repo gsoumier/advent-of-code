@@ -4,23 +4,23 @@ import AocRunner
 import InputType
 import LineParser
 
-data class DayXXXLine(
+data class Day99Line(
     val line: String,
 ) {
 
 }
 
-class DayXXXParser : LineParser<DayXXXLine> {
-    override fun parseLine(index: Int, line: String): DayXXXLine {
-        return DayXXXLine(
+class Day99Parser : LineParser<Day99Line> {
+    override fun parseLine(index: Int, line: String): Day99Line {
+        return Day99Line(
             line,
         )
     }
 }
 
-class DayXXX(inputType: InputType = InputType.FINAL) : AocRunner<DayXXXLine, Long>(
-    12, // FIXME : bien penser à changer
-    DayXXXParser(),
+class Day99(inputType: InputType = InputType.FINAL) : AocRunner<Day99Line, Long>(
+    99,
+    Day99Parser(),
     inputType
 ) {
     override fun partOne(): Long {
@@ -35,5 +35,5 @@ class DayXXX(inputType: InputType = InputType.FINAL) : AocRunner<DayXXXLine, Lon
 
 
 fun main() {
-    DayXXX().run()
+    Day99().run()
 }
