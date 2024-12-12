@@ -21,18 +21,30 @@ data class Coord(
     }
 
     override fun compareTo(other: Coord): Int {
-        (y.absoluteValue + x.absoluteValue - other.y.absoluteValue - other.x.absoluteValue).takeUnless { it == 0 }?.let { return it }
+        (y.absoluteValue + x.absoluteValue - other.y.absoluteValue - other.x.absoluteValue).takeUnless { it == 0 }
+            ?.let { return it }
         return 1000 * (y - other.y) + x - other.x
     }
 
-    fun mainNeighbours() : List<Coord> {
-       return Direction.cardinals().map { to(it) }
+    fun mainNeighbours(): List<Coord> {
+        return Direction.cardinals().map { to(it) }
     }
 
-    fun extendedNeighbours() : List<Coord> {
-       return Direction.extended().map { to(it) }
+    fun extendedNeighbours(): List<Coord> {
+        return Direction.extended().map { to(it) }
     }
 }
+
+data class Coords(val coords: List<Coord>): List<Coord> by coords {
+    fun filterY(y: Int?) = coords.filter { y?.let { refY -> it.y == refY } ?: true }
+    fun filterX(x: Int?) = coords.filter { x?.let { refX -> it.x == refX } ?: true }
+    fun minX(y: Int? = null) = filterY(y).minOf { it.x }
+    fun maxX(y: Int? = null) = filterY(y).maxOf { it.x }
+    fun minY(x: Int? = null) = filterX(x).minOf { it.y }
+    fun maxY(x: Int? = null) = filterX(x).maxOf { it.y }
+
+}
+
 
 enum class Direction(val nX: Int, val nY: Int) {
     N(0, -1),
@@ -115,10 +127,7 @@ data class Vector(val a: Coord, val b: Coord) {
 }
 
 
-
-
-
-data class CharPoint(val coord: Coord, var value: Char){
+data class CharPoint(val coord: Coord, var value: Char) {
     val intValue: Int
         get() {
             return value.digitToInt()
@@ -137,7 +146,7 @@ class CharMap(
     }
 
     fun changeChar(coord: Coord, newVal: Char): CharMap {
-        return CharMap(charPoints.map { if(it.coord == coord) it.copy(value = newVal) else it })
+        return CharMap(charPoints.map { if (it.coord == coord) it.copy(value = newVal) else it })
     }
 
     fun getCharSequence(from: Coord, dir: Direction, size: Int): List<Char>? {
@@ -156,13 +165,14 @@ class CharMap(
 
     fun Int.inInitialMap(size: Int): Int {
         val res = this % size
-        if(res < 0)
+        if (res < 0)
             return res + size
         return res
     }
+
     fun Int.initialMapCoord(size: Int): Int {
         val res = this / size
-        if(this % size < 0)
+        if (this % size < 0)
             return res - 1
         return res
     }
@@ -177,7 +187,7 @@ class CharMap(
         }
     }
 
-    fun mapCoord(it: Coord) : Coord {
+    fun mapCoord(it: Coord): Coord {
         return Coord(it.x.initialMapCoord(nbCols), it.y.initialMapCoord(nbLines))
     }
 
@@ -193,7 +203,6 @@ class CharMap(
     val midS = Coord(end / 2, end)
     val axis = setOf(midW, midN, midE, midS)
 }
-
 
 
 data class ZCoord(val coord: Coord, val z: Int)
