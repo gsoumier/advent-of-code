@@ -17,13 +17,8 @@ class Day11Test {
         }
 
         @Test
-        fun blink75() {
-            runner.blinkManyTimes(listOf(0), 25) shouldBe 55312
-        }
-
-        @Test
         fun partTwo() {
-            runner.partTwo() shouldBe 0
+            runner.partTwo() shouldBe 65601038650482
         }
     }
 
