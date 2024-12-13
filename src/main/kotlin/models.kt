@@ -1,6 +1,20 @@
 import kotlin.math.abs
 import kotlin.math.absoluteValue
 
+
+data class LongCoord(
+    val x: Long,
+    val y: Long,
+) {
+
+    fun to(vector: Vector, times: Long = 1) = LongCoord(
+        x + times * vector.nX,
+        y + times * vector.nY,
+    )
+}
+
+
+
 data class Coord(
     val x: Int,
     val y: Int,
@@ -116,6 +130,7 @@ data class NavigationPoint(val coord: Coord, val direction: Direction) {
 }
 
 data class Vector(val a: Coord, val b: Coord) {
+    constructor(b: Coord) : this(Coord(0, 0), b)
     val nX: Int
         get() = b.x - a.x
     val nY: Int
