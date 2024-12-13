@@ -13,27 +13,26 @@ data class ClawMachine(
     val b: Vector,
     val prize: LongCoord,
 ) {
+    private val unitConvertionError = 10000000000000L
+    private val fixedPrize = LongCoord(unitConvertionError + prize.x, unitConvertionError + prize.y)
 
-    val forgotten = 10000000000000L
-    val realPrize = LongCoord(forgotten + prize.x, forgotten + prize.y)
-
-    fun resolution(noLimit: Boolean): Long? {
-        val bPush = calculateB(noLimit)?.takeIf { noLimit || it <= 100L } ?: return null
-        val aPush = LongCoord(0, 0).to(b, bPush).pushToWin(a, noLimit) ?: return null
+    fun resolution(fixUnitConvertion: Boolean = false): Long? {
+        val p = if (fixUnitConvertion) fixedPrize else prize
+        val bPush = calculateB(p)
+            ?.takeIf { fixUnitConvertion || it <= 100L } ?: return null
+        val aPush = LongCoord(0, 0).to(b, bPush).pushToWin(a, p)
+            ?.takeIf { fixUnitConvertion || it <= 100L } ?: return null
         return 3 * aPush + bPush
     }
 
-    fun calculateB(noLimit: Boolean) : Long?{
-        val p = if(noLimit) realPrize else prize
+    private fun calculateB(p: LongCoord): Long? {
         return (a.nX * p.y - a.nY * p.x).dividedBy(a.nX.toLong() * b.nY - a.nY * b.nX)
     }
 
-    fun LongCoord.pushToWin(toPush: Vector, noLimit: Boolean = false): Long? {
-        val p = if(noLimit) realPrize else prize
+    private fun LongCoord.pushToWin(toPush: Vector, p: LongCoord): Long? {
         if (x > p.x || y > p.y) return null
         return ((p.x - x) / toPush.nX)
-            .takeIf { to(toPush, it) == if(noLimit) realPrize else p}
-            ?.takeIf { noLimit || it <= 100 }
+            .takeIf { to(toPush, it) == p }
     }
 }
 
@@ -52,30 +51,32 @@ class Day13(inputType: InputType = InputType.FINAL) : AocRunner<String, Long>(
 ) {
 
 
-    val machines = lines.splitWhen { it.isEmpty() }.map { (a, b, p) ->
-        ClawMachine(a.parseButton(), b.parseButton(), p.parsePrize())
+    private val machines = lines.splitWhen { it.isEmpty() }.map { (a, b, p) ->
+        ClawMachine(
+            a.parseCoord().toVector(),
+            b.parseCoord().toVector(),
+            p.parseCoord()
+        )
     }
 
     override fun partOne(): Long {
-        return machines.mapNotNull { it.resolution(false) }.sum()
+        return machines.mapNotNull { it.resolution() }.sum()
     }
 
     override fun partTwo(): Long {
-        return machines.mapNotNull { it.resolution(true) }.sum()
+        return machines.mapNotNull { it.resolution(fixUnitConvertion = true) }.sum()
     }
 
 }
 
-private fun String.parseButton(): Vector {
-    val (_, coords) = split(": ")
-    val (x, y) = coords.split(", ").map { it.drop(2).toInt() }
-    return Vector(Coord(x, y))
-}
-
-private fun String.parsePrize(): LongCoord {
+private fun String.parseCoord(): LongCoord {
     val (_, coords) = split(": ")
     val (x, y) = coords.split(", ").map { it.drop(2).toLong() }
     return LongCoord(x, y)
+}
+
+private fun LongCoord.toVector(): Vector {
+    return Vector(Coord(x.toInt(), y.toInt()))
 }
 
 
