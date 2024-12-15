@@ -157,7 +157,7 @@ class CharMap(
     val map = charPoints.associateBy { it.coord }
 
     operator fun get(coord: Coord, mapRepeatable: Boolean = false): CharPoint? {
-        return map[coord.takeUnless { mapRepeatable } ?: coord.inInitialMap()]?.value?.let { CharPoint(coord, it) }
+        return map[coord.takeUnless { mapRepeatable } ?: inInitialMap(coord)]?.value?.let { CharPoint(coord, it) }
     }
 
     fun changeChar(coord: Coord, newVal: Char): CharMap {
@@ -174,8 +174,8 @@ class CharMap(
         return getCharSequence(from, dir, size)?.joinToString("") { it.toString() }
     }
 
-    fun Coord.inInitialMap(): Coord {
-        return Coord(x.inInitialMap(nbCols), y.inInitialMap(nbLines))
+    fun inInitialMap(coord: Coord): Coord {
+        return Coord(coord.x.inInitialMap(nbCols), coord.y.inInitialMap(nbLines))
     }
 
     fun Int.inInitialMap(size: Int): Int {
@@ -206,6 +206,21 @@ class CharMap(
         return Coord(it.x.initialMapCoord(nbCols), it.y.initialMapCoord(nbLines))
     }
 
+    fun print(){
+        println()
+        println()
+        println()
+        (0..<nbLines).forEach { line ->
+            println(charPoints.filter { it.coord.y == line }.sortedBy { it.coord.x }.joinToString("") { it.value.toString() })
+        }
+    }
+
+    fun ySym(coord: Coord): Coord {
+        val mid = nbCols/2
+        return coord.copy(x= mid + (mid - coord.x))
+    }
+
+    // FIXME Attention map carrée
     val end = nbLines - 1
     val cNW = Coord(0, 0)
     val cNE = Coord(0, end)
