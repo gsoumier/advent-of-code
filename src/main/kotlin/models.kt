@@ -207,12 +207,10 @@ class CharMap(
     }
 
     fun print(){
-        println()
-        println()
-        println()
         (0..<nbLines).forEach { line ->
             println(charPoints.filter { it.coord.y == line }.sortedBy { it.coord.x }.joinToString("") { it.value.toString() })
         }
+        println()
     }
 
     fun ySym(coord: Coord): Coord {
