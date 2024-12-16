@@ -20,7 +20,7 @@ fun <T> List<T>.allCombinations(size: Int): List<List<T>> {
 fun <T> List<T>.allPairs() = flatMapIndexed { index: Int, a: T -> drop(index + 1).map { a to it } }
 
 enum class InputType {
-    FINAL, SAMPLE
+    FINAL, SAMPLE, SAMPLE2
 }
 
 fun List<String>.getCols(): List<List<Char>> = (0..<first().length).map { colIndex -> map { it[colIndex] } }
