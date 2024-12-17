@@ -23,37 +23,37 @@ data class Register(var a: Long, var b: Long = 0, var c: Long = 0) {
         return null
     }
 
-    fun adv(operand: Int) {
+    private fun adv(operand: Int) {
         a = a.dv(combo(operand))
     }
 
-    fun bdv(operand: Int) {
+    private fun bdv(operand: Int) {
         b = a.dv(combo(operand))
     }
 
-    fun cdv(operand: Int) {
+    private fun cdv(operand: Int) {
         c = a.dv(combo(operand))
     }
 
-    fun blx(operand: Int) {
+    private fun blx(operand: Int) {
         b = b.xor(operand.toLong())
     }
 
-    fun bst(operand: Int) {
+    private fun bst(operand: Int) {
         b = comboMod8(operand)
     }
 
-    fun jnz(operand: Int): Int? {
+    private fun jnz(operand: Int): Int? {
         return operand.takeIf { a != 0L }
     }
 
-    fun bxc() {
+    private fun bxc() {
         b = b.xor(c)
     }
 
-    fun comboMod8(operand: Int) = combo(operand) % 8
+    private fun comboMod8(operand: Int) = combo(operand) % 8
 
-    fun combo(operand: Int): Long {
+    private fun combo(operand: Int): Long {
         return when (operand) {
             4 -> a
             5 -> b
