@@ -13,12 +13,9 @@ data class LongCoord(
     )
 }
 
-
-
-data class Coord(
-    val x: Int,
-    val y: Int,
-) : Comparable<Coord> {
+interface Coordinates : Comparable<Coordinates> {
+    val x: Int
+    val y: Int
 
     fun to(direction: Direction, times: Int = 1) = Coord(
         x + times * direction.nX,
@@ -34,7 +31,7 @@ data class Coord(
         return abs(other.y - y) + abs(other.x - x)
     }
 
-    override fun compareTo(other: Coord): Int {
+    override fun compareTo(other: Coordinates): Int {
         (y.absoluteValue + x.absoluteValue - other.y.absoluteValue - other.x.absoluteValue).takeUnless { it == 0 }
             ?.let { return it }
         return 1000 * (y - other.y) + x - other.x
@@ -48,6 +45,11 @@ data class Coord(
         return Direction.extended().map { to(it) }
     }
 }
+
+data class Coord(
+    override val x: Int,
+    override val y: Int,
+) : Coordinates
 
 data class Coords(val coords: List<Coord>): List<Coord> by coords {
     fun filterY(y: Int?) = coords.filter { y?.let { refY -> it.y == refY } ?: true }
@@ -149,12 +151,24 @@ data class CharPoint(val coord: Coord, var value: Char) {
         }
 }
 
+data class Neighbour(val charPoint: CharPoint, val direction: Direction)
+
 class CharMap(
     val charPoints: List<CharPoint>,
 ) {
+
+    constructor(
+        wide: Int,
+        height: Int,
+        defaultCharValue: Char = '.'
+    ) : this((0..<wide).flatMap { x-> (0..<height).map { y -> CharPoint(Coord(x,y), defaultCharValue) } })
+
     val nbCols: Int = charPoints.maxOf { it.coord.x } + 1
     val nbLines: Int = charPoints.maxOf { it.coord.y } + 1
     val map = charPoints.associateBy { it.coord }
+
+    fun withChars(coords: Set<Coord>, char : Char) =
+        CharMap(charPoints.map { if (it.coord in coords) it.copy(value = char) else it })
 
     operator fun get(coord: Coord, mapRepeatable: Boolean = false): CharPoint? {
         return map[coord.takeUnless { mapRepeatable } ?: inInitialMap(coord)]?.value?.let { CharPoint(coord, it) }
@@ -196,9 +210,13 @@ class CharMap(
         return charPoints.find(predicate)
     }
 
-    fun neighboursInMap(coord: Coord, mapRepeatable: Boolean = false): List<Pair<Direction, CharPoint>> {
-        return Direction.cardinals().mapNotNull { dir ->
-            get(coord.to(dir), mapRepeatable)?.let { dir to it }
+    fun neighboursInMap(
+        coord: Coordinates,
+        directions: Set<Direction> = Direction.cardinals(),
+        mapRepeatable: Boolean = false
+    ): List<Neighbour> {
+        return directions.mapNotNull { dir ->
+            get(coord.to(dir), mapRepeatable)?.let { Neighbour(it, dir)}
         }
     }
 

@@ -19,7 +19,7 @@ class Day23(inputType: InputType = InputType.FINAL) : AocRunner<String, Long>(
     val end = Coord(nbCols - 2, nbLines - 1)
     val endPoint = charMap[end]!!
 
-    val intersections = charMap.charPoints.filter { charMap.neighboursInMap(it.coord).filter { it.second.value != '#' }.size > 2 } + startPoint + endPoint
+    val intersections = charMap.charPoints.filter { charMap.neighboursInMap(it.coord).filter { it.charPoint.value != '#' }.size > 2 } + startPoint + endPoint
 
     override fun partOne(): Long {
         return getLongestPathsForIntersection(
@@ -42,9 +42,9 @@ class Day23(inputType: InputType = InputType.FINAL) : AocRunner<String, Long>(
         var neighbours = possibleNeighbours(current, visitedInter, dir, slopeSlippery, checkIntersection)
         var singleNeighbour = neighbours.singleOrNull()
         while (singleNeighbour != null) {
-            singleNeighbour.takeIf { it.second.coord == end }?.let { return Triple(charMap[end]!!,straightPathLength, it.first) }
-            current = singleNeighbour.second
-            dir = singleNeighbour.first
+            singleNeighbour.takeIf { it.charPoint.coord == end }?.let { return Triple(charMap[end]!!,straightPathLength, it.direction) }
+            current = singleNeighbour.charPoint
+            dir = singleNeighbour.direction
             straightPathLength++
             neighbours = possibleNeighbours(current, visitedInter, dir, slopeSlippery)
             singleNeighbour = neighbours.singleOrNull()
@@ -59,11 +59,11 @@ class Day23(inputType: InputType = InputType.FINAL) : AocRunner<String, Long>(
         slopeSlippery: Boolean,
         checkIntersection: Boolean = true,
     ) = charMap.neighboursInMap(start.coord)
-        .filter { it.second.value != '#' }
-        .filter { it.first != direction.opposite() }
-        .filter { !checkIntersection || it.second.coord !in visited }
-        .filter { !slopeSlippery || it.second.slopeDirection() != it.first.opposite() }
-        .filter { !slopeSlippery || start.slopeDirection()?.let { slopeDir -> slopeDir == it.first } ?: true }
+        .filter { it.charPoint.value != '#' }
+        .filter { it.direction != direction.opposite() }
+        .filter { !checkIntersection || it.charPoint.coord !in visited }
+        .filter { !slopeSlippery || it.charPoint.slopeDirection() != it.direction.opposite() }
+        .filter { !slopeSlippery || start.slopeDirection()?.let { slopeDir -> slopeDir == it.direction } ?: true }
 
     override fun partTwo(): Long {
         return getLongestPathsForIntersection(
@@ -75,8 +75,8 @@ class Day23(inputType: InputType = InputType.FINAL) : AocRunner<String, Long>(
 
     private fun findConnections(point: CharPoint, slopeSlippery: Boolean): List<Pair<CharPoint, Int>> {
         return charMap.neighboursInMap(point.coord)
-            .filter { it.second.value != '#' }
-            .mapNotNull { getNextIntersection(it.second, it.first, emptySet(), slopeSlippery, false) }
+            .filter { it.charPoint.value != '#' }
+            .mapNotNull { getNextIntersection(it.charPoint, it.direction, emptySet(), slopeSlippery, false) }
             .map { it.first to it.second }
     }
 

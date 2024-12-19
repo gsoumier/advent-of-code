@@ -19,7 +19,7 @@ class Day14Test {
             runner.move(robot, 1).second shouldBe Coord(4, 1)
             runner.move(robot, 2).second shouldBe Coord(6, 5)
             runner.move(robot, 5).second shouldBe Coord(1, 3)
-            runner.move(robot, 100).second shouldBe Coord(1, 3)
+            runner.move(robot, 100).second shouldBe Coord(4, 5)
 
 
         }

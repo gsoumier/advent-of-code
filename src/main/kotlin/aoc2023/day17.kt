@@ -28,15 +28,15 @@ fun findShortestPath(map: CharMap, source: Coord, target: Coord, part2: Boolean 
         }
 
         map.neighboursInMap(u.coord)
-            .filter { it.first != u.dir.opposite() }
-            .filter { !part2 || it.second.coord != target || it.first == u.dir && u.stepsInDir >= 4  }
-            .filter { !part2 || it.first == u.dir || u.stepsInDir >= 4  }
+            .filter { it.direction != u.dir.opposite() }
+            .filter { !part2 || it.charPoint.coord != target || it.direction == u.dir && u.stepsInDir >= 4  }
+            .filter { !part2 || it.direction == u.dir || u.stepsInDir >= 4  }
             .map {
                 Node(
-                    it.second.coord,
-                    it.first,
-                    if (it.first == u.dir) u.stepsInDir + 1 else 1
-                ) to it.second.intValue
+                    it.charPoint.coord,
+                    it.direction,
+                    if (it.direction == u.dir) u.stepsInDir + 1 else 1
+                ) to it.charPoint.intValue
             }
             .filter { it.first.stepsInDir < (11.takeIf { part2 } ?: 4) }
             .forEach { (node, cost) ->

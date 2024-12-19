@@ -130,7 +130,7 @@ data class GardenState(
     ): GardenState {
         val res = (1..nbStep).fold(this) { state, _ ->
             state.copy(possiblePlots = state.possiblePlots
-                .flatMap { state.charMap.neighboursInMap(it, mapRepeatable).map { it.second.coord } }
+                .flatMap { state.charMap.neighboursInMap(it, mapRepeatable = mapRepeatable).map { it.charPoint.coord } }
                 .filter { it.isNotRock(mapRepeatable) }
                 .toSet()
             )

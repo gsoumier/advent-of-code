@@ -38,7 +38,7 @@ class Day14(inputType: InputType = InputType.FINAL) : AocRunner<Robot, Long>(
 
     val wide = if(inputType == InputType.FINAL) 101 else 11
     val height = if(inputType == InputType.FINAL) 103 else 7
-    val map = CharMap((0..<wide).flatMap { x-> (0..<height).map { y -> CharPoint(Coord(x,y), '.') } })
+    val map = CharMap(wide, height)
 
     override fun partOne(): Long {
         val robots100 = lines.map { robot -> move(robot, 100).second }
