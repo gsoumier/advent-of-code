@@ -91,8 +91,9 @@ data class Path<Node>(val distance: Long, val possiblePaths: List<List<Node>>)
 fun <Node : Coordinates> dijkstra(
     map: CharMap,
     initial: Node,
-    neighbourFilter: (Neighbour) -> Boolean = { it.charPoint.value == '.' },
+    neighbourFilter: (Neighbour) -> Boolean = { it.charPoint.value in setOf('.', 'E') },
     distanceCalculator: (Pair<Node, Node>) -> Long = { 1 },
+    maxDistance: Long? = null,
     nodeBuilder: (Neighbour) -> Node,
 ): Map<Node, Path<Node>> {
     val distances = mutableMapOf<Node, Long>()
@@ -110,17 +111,19 @@ fun <Node : Coordinates> dijkstra(
         neighbours.forEach { it ->
             val newNode = nodeBuilder(it)
             val totalDist = currentDist + distanceCalculator(node to newNode)
-            val prevDist = distances.getValue(newNode)
-            if (totalDist < prevDist) {
-                distances[newNode] = totalDist
-                priorityQueue.add(newNode to totalDist)
-                previous[newNode] = previous[node]!!.map { it + newNode }.toMutableList()
-            }
-            if(totalDist == prevDist){
-                previous[newNode]!!.addAll(previous[node]!!.map { it + newNode })
+            if (totalDist <= (maxDistance ?: Long.MAX_VALUE)) {
+                val prevDist = distances.getValue(newNode)
+                if (totalDist < prevDist) {
+                    distances[newNode] = totalDist
+                    priorityQueue.add(newNode to totalDist)
+                    previous[newNode] = previous[node]!!.map { it + newNode }.toMutableList()
+                }
+                if (totalDist == prevDist) {
+                    previous[newNode]!!.addAll(previous[node]!!.map { it + newNode })
+                }
             }
         }
     }
-    return distances.mapValues { (node,dist) -> Path(dist, previous[node]!!) }
+    return distances.mapValues { (node, dist) -> Path(dist, previous[node]!!) }
 }
 
