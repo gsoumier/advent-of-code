@@ -51,7 +51,7 @@ data class Coord(
     override val y: Int,
 ) : Coordinates
 
-data class Coords(val coords: List<Coord>): List<Coord> by coords {
+data class Coords(val coords: List<Coord>) : List<Coord> by coords {
     fun filterY(y: Int?) = coords.filter { y?.let { refY -> it.y == refY } ?: true }
     fun filterX(x: Int?) = coords.filter { x?.let { refX -> it.x == refX } ?: true }
     fun minX(y: Int? = null) = filterY(y).minOf { it.x }
@@ -133,6 +133,7 @@ data class NavigationPoint(val coord: Coord, val direction: Direction) {
 
 data class Vector(val a: Coord, val b: Coord) {
     constructor(b: Coord) : this(Coord(0, 0), b)
+
     val nX: Int
         get() = b.x - a.x
     val nY: Int
@@ -140,6 +141,14 @@ data class Vector(val a: Coord, val b: Coord) {
 
     fun inverse(): Vector {
         return Vector(b, a)
+    }
+
+    fun decompose(): List<Direction> {
+        return (0..<abs(nX)).map {
+            if (nX > 0) Direction.E else Direction.W
+        } + (0..<abs(nY)).map {
+            if (nY > 0) Direction.S else Direction.N
+        }
     }
 }
 
@@ -161,13 +170,13 @@ class CharMap(
         wide: Int,
         height: Int,
         defaultCharValue: Char = '.'
-    ) : this((0..<wide).flatMap { x-> (0..<height).map { y -> CharPoint(Coord(x,y), defaultCharValue) } })
+    ) : this((0..<wide).flatMap { x -> (0..<height).map { y -> CharPoint(Coord(x, y), defaultCharValue) } })
 
     val nbCols: Int = charPoints.maxOf { it.coord.x } + 1
     val nbLines: Int = charPoints.maxOf { it.coord.y } + 1
     val map = charPoints.associateBy { it.coord }
 
-    fun withChars(coords: Set<Coord>, char : Char) =
+    fun withChars(coords: Set<Coord>, char: Char) =
         CharMap(charPoints.map { if (it.coord in coords) it.copy(value = char) else it })
 
     operator fun get(coord: Coord, mapRepeatable: Boolean = false): CharPoint? {
@@ -216,7 +225,7 @@ class CharMap(
         mapRepeatable: Boolean = false
     ): List<Neighbour> {
         return directions.mapNotNull { dir ->
-            get(coord.to(dir), mapRepeatable)?.let { Neighbour(it, dir)}
+            get(coord.to(dir), mapRepeatable)?.let { Neighbour(it, dir) }
         }
     }
 
@@ -224,16 +233,17 @@ class CharMap(
         return Coord(it.x.initialMapCoord(nbCols), it.y.initialMapCoord(nbLines))
     }
 
-    fun print(){
+    fun print() {
         (0..<nbLines).forEach { line ->
-            println(charPoints.filter { it.coord.y == line }.sortedBy { it.coord.x }.joinToString("") { it.value.toString() })
+            println(charPoints.filter { it.coord.y == line }.sortedBy { it.coord.x }
+                .joinToString("") { it.value.toString() })
         }
         println()
     }
 
     fun ySym(coord: Coord): Coord {
-        val mid = nbCols/2
-        return coord.copy(x= mid + (mid - coord.x))
+        val mid = nbCols / 2
+        return coord.copy(x = mid + (mid - coord.x))
     }
 
     // FIXME Attention map carrée
