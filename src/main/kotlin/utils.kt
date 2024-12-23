@@ -28,7 +28,7 @@ fun List<String>.getCols(): List<List<Char>> = (0..<first().length).map { colInd
 
 fun List<String>.getStringCols(): List<String> = getCols().map { it.joinToString("") }
 
-fun List<String>.splitWhen(predicate: (String) -> Boolean): List<List<String>> {
+fun List<String>.splitWhen(predicate: (String) -> Boolean = { it.isEmpty() }): List<List<String>> {
     val result = mutableListOf<List<String>>()
     var sublist = mutableListOf<String>()
     for (line in this) {
