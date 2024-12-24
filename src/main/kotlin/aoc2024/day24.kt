@@ -19,7 +19,7 @@ enum class Operation {
         override fun apply(a: Boolean, b: Boolean) = a xor b
     };
 
-    abstract fun apply(a: Boolean, b: Boolean) : Boolean
+    abstract fun apply(a: Boolean, b: Boolean): Boolean
 }
 
 data class Wire(val name: WireName, val value: Boolean)
@@ -53,8 +53,9 @@ class Day24(inputType: InputType = InputType.FINAL) : AocRunner<String, String>(
         return wires.binaryValues("z").toDecimal().toString()
     }
 
-    private fun List<Wire>.toDecimal() = mapIndexed { index, wire -> if (wire.value) pow(2.0, index.toDouble()).toLong() else 0 }
-        .sum()
+    private fun List<Wire>.toDecimal() =
+        mapIndexed { index, wire -> if (wire.value) pow(2.0, index.toDouble()).toLong() else 0 }
+            .sum()
 
     private fun MutableMap<WireName, Wire>.binaryValues(prefix: String) = values
         .filter { it.name.startsWith(prefix) }
@@ -77,62 +78,61 @@ class Day24(inputType: InputType = InputType.FINAL) : AocRunner<String, String>(
         }
     }
 
+    /*
+    z = XOR( XOR(x,y), r )
+    r = OR( AND( XOR(x,y), r ), AND(x, y) )
+
+    n = XOR(x,y)
+    a1 = AND(x, y)
+    a2 = AND(n, r)
+     */
     override fun partTwo(): String {
-        var r : WireName = gates.findOpOnIndex(Operation.AND, "00")
-
+        var r: WireName = gates.findOpOnIndex(Operation.AND, "00")
         val errors = mutableListOf<Pair<WireName, WireName>>()
-
-        gates.groupBy { it.operation }.forEach { o, u ->
-            println()
-            println("Op $o : ${u.size}")
-            val (l1, l2) = u.partition { it.input1.first() in setOf('x', 'y') }
-            l1.sortedBy { it.input1.drop(1) }.forEach { println(it) }
-            println()
-            l2.sortedBy { it.input1.drop(1) }.forEach { println(it) }
-            println()
-        }
-
         (1..44).forEach {
             val index = it.toString().padStart(2, '0')
-            r = r.correct(errors)
             var n = gates.findOpOnIndex(Operation.XOR, index).correct(errors)
             var a1 = gates.findOpOnIndex(Operation.AND, index).correct(errors)
-            var z = gates.findOpOn(Operation.XOR, r, n)?.correct(errors)
-            var a2 = gates.findOpOn(Operation.AND, r, n)?.correct(errors)
-            if(z == null || a2 == null){
-                n = gates.findOpOn(Operation.XOR, r)?.takeIf { gates.findOpOn(Operation.AND, r) == it }
-                    ?.also { errors.add(n to it) } ?: n
-                r = gates.findOpOn(Operation.XOR, n)?.takeIf { gates.findOpOn(Operation.AND, n) == it }
-                    ?.also { errors.add(r to it) } ?: r
+
+            var z = gates.findOpOn(Operation.XOR, n, r)?.correct(errors)
+            var a2 = gates.findOpOn(Operation.AND, n, r)?.correct(errors)
+            if (z == null || a2 == null) {
+                n = gates.findOpOn(Operation.XOR, r)
+                    ?.takeIf { gates.findOpOn(Operation.AND, r) == it }
+                    ?.also { errors.add(n to it) } ?: n.also {
+                    r = gates.findOpOn(Operation.XOR, n)?.takeIf { gates.findOpOn(Operation.AND, n) == it }
+                        ?.also { errors.add(r to it) } ?: r
+                }
             }
             z = gates.findOpOn(Operation.XOR, r, n)!!
             a2 = gates.findOpOn(Operation.AND, r, n)!!
-            if(z != "z$index")
+            if (z != "z$index")
                 errors.add(z to "z$index")
             a1 = a1.correct(errors)
             a2 = a2.correct(errors)
-            val newR = gates.findOpOn(Operation.OR, a1, a2)?.correct(errors)
-            if(newR == null){
-                a1 = gates.findOpOn(Operation.OR, a2)
-                    ?.also { errors.add(a2!! to it) } ?: a1
-                a2 = gates.findOpOn(Operation.OR, a1)
-                    ?.also { errors.add(a1 to it) } ?: a2
-            }
-            r = gates.findOpOn(Operation.OR, a1, a2)!!
+            r = gates.findOpOn(Operation.OR, a1, a2)!!.correct(errors)
         }
-        return errors.filter { it.first != it.second }.flatMap { it.toList() }.sorted().joinToString(",")
+        return errors.flatMap { it.toList() }.sorted().joinToString(",")
     }
 
-    private fun List<Gate>.findOpOnIndex(operation: Operation, suffix: String) = find { it.operation == operation && it.input1.endsWith(
-        suffix
-    ) }!!.result
+    private fun List<Gate>.findOpOnIndex(operation: Operation, suffix: String) = find {
+        it.operation == operation && it.input1.endsWith(
+            suffix
+        )
+    }!!.result
 
-    private fun List<Gate>.findOpOn(operation: Operation, a: String, b: String) = find { it.operation == operation
-            && setOf(it.input1, it.input2) == setOf(a, b) }?.result
+    private fun List<Gate>.findOpOn(operation: Operation, a: String, b: String) = find {
+        it.operation == operation
+                && setOf(it.input1, it.input2) == setOf(a, b)
+    }?.result
 
-    private fun List<Gate>.findOpOn(operation: Operation, a: String) = find { it.operation == operation
-            && it.input1 == a }?.input2 ?: find { it.operation == operation
-            && it.input2 == a }?.input1
+    private fun List<Gate>.findOpOn(operation: Operation, a: String) = find {
+        it.operation == operation
+                && it.input1 == a
+    }?.input2 ?: find {
+        it.operation == operation
+                && it.input2 == a
+    }?.input1
 
 }
 
