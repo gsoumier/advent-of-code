@@ -46,22 +46,13 @@ class Day21Test {
         }
 
         @Test
-        fun testFindFullBestCombination() {
-            runner.findFullBestCombination("029A") shouldBe "<vA<AA>>^AvAA<^A>A<v<A>>^AvA^A<vA>^A<v<A>^A>AAvA^A<v<A>A>^AAAvA<^A>A"
-        }
-        @Test
-        fun testFindFullBestCombinationPart2() {
-            runner.findFullBestCombination("029A", 25) shouldBe "<vA<AA>>^AvAA<^A>A<v<A>>^AvA^A<vA>^A<v<A>^A>AAvA^A<v<A>A>^AAAvA<^A>A"
-        }
-
-        @Test
         fun partOne() {
             runner.partOne() shouldBe 126384
         }
 
         @Test
         fun partTwo() {
-            runner.partTwo() shouldBe 0
+            runner.partTwo() shouldBe 154115708116294L
         }
     }
 

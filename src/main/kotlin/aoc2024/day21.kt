@@ -25,16 +25,16 @@ class Day21(inputType: InputType = InputType.FINAL) : AocRunner<String, Long>(
         "789",
         "456",
         "123",
-        "X0A",
+        " 0A",
     ).toCharMap()
 
     val directionalMap = listOf(
-        "X^A",
+        " ^A",
         "<v>",
     ).toCharMap()
 
     override fun partOne(): Long {
-        return lines.sumOf { findFullBestCombination(it) * it.dropLast(1).toLong() }
+        return lines.sumOf { findFullBestCombination(it, 2) * it.dropLast(1).toLong() }
     }
 
     override fun partTwo(): Long {
@@ -42,7 +42,7 @@ class Day21(inputType: InputType = InputType.FINAL) : AocRunner<String, Long>(
     }
 
 
-    fun findFullBestCombination(code: String, hazardRobotNumber: Int = 2): Long {
+    fun findFullBestCombination(code: String, hazardRobotNumber: Int): Long {
         val depressurizedCombinations = findBestCombination(code, numericMap, numericCombinations)
         return depressurizedCombinations.minOf { numeric ->
             numeric.split("A").map { "${it}A" }.dropLast(1).sumOf { findDirectionalBestCombination(it, hazardRobotNumber) }
@@ -52,66 +52,56 @@ class Day21(inputType: InputType = InputType.FINAL) : AocRunner<String, Long>(
     private fun findDirectionalBestCombination(code: String, times : Int): Long {
         directionalCache[code to times]?.let { return it }
         if(times == 0) return code.length.toLong()
-        return findBestCombination(code, directionalMap, directionalCombinations).keepMinLength().minOf { sequence ->
+        return findBestCombination(code, directionalMap, directionalCombinations).minOf { sequence ->
             sequence.split("A").map { "${it}A" }.dropLast(1).sumOf { findDirectionalBestCombination(it, times-1) }
         }.also { directionalCache[code to times] = it }
     }
 
     fun findBestCombination(code: String, charMap: CharMap, cache: MutableMap<Vector, Set<String>>): Set<String> {
-        val vectors = toVectors(code, charMap)
-        val allCombinations = vectors.fold(setOf("")) { acc, v ->
+        return code.toVectors(charMap).fold(setOf("")) { acc, v ->
             acc.flatMap { comb ->
-                combinations(v, charMap, cache).map { comb + it }
+                v.combinations(charMap, cache).map { comb + it }
             }.toSet()
         }
-        return allCombinations.keepMinLength()
     }
 
-    private fun Set<String>.keepMinLength(): Set<String> {
-        val minLength = minOf { it.length }
-        return filter { it.length == minLength }.toSet()
-    }
-
-    fun combinations(vector: Vector, charMap: CharMap, cache: MutableMap<Vector, Set<String>>): Set<String> {
-        cache[vector]?.let { return it }
-        return vector.decompose().permutations().toList().toSet()
-            .filter { isNotPassingGap(charMap, vector.a, it) }
-            .map {
-                it.fold("") { acc, d ->
-                    acc + when (d) {
-                        Direction.N -> "^"
-                        Direction.E -> ">"
-                        Direction.S -> "v"
-                        else -> "<"
-                    }
-                } + "A"
-            }
+    private fun Vector.combinations(charMap: CharMap, cache: MutableMap<Vector, Set<String>>): Set<String> {
+        cache[this]?.let { return it }
+        return decompose().permutations().toList().toSet()
+            .filter { isNotPassingGap(charMap, a, it) }
+            .map { it.toArrowString() }
             .toSet()
-            .also { cache[vector] = it }
+            .also { cache[this] = it }
     }
+
+    private fun List<Direction>.toArrowString() = fold("") { acc, d ->
+        acc + when (d) {
+            Direction.N -> "^"
+            Direction.E -> ">"
+            Direction.S -> "v"
+            else -> "<"
+        }
+    } + "A"
 
     private fun isNotPassingGap(charMap: CharMap, origin: Coord, dirs: List<Direction>): Boolean {
         var current = origin
         dirs.forEach {
             current = current.to(it)
-            if (charMap[current]?.value == 'X') {
+            if (charMap[current]?.value == ' ') {
                 return false
             }
         }
         return true
     }
 
-    private fun toVectors(code: String, charMap: CharMap): List<Vector> {
+    private fun String.toVectors(charMap: CharMap): List<Vector> {
         var current = charMap.find { it.value == 'A' }!!.coord
-        return code.asSequence()
+        return asSequence()
             .map { char -> charMap.charPoints.find { it.value == char }!! }
             .map { Vector(current, it.coord).also { current = it.b } }
             .toList()
     }
-
-
 }
-
 
 fun main() {
     Day21().run()
